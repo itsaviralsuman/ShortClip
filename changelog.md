@@ -4,6 +4,17 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.0.3] - 2026-11-17
+
+### Smooth Scrolling & Scroll Fade-Out Effects
+- **Global Smooth Scrolling**: Added `scroll-behavior: smooth` with `-webkit-font-smoothing` and cubic-bezier easing curves across the entire app.
+- **Scroll Fade-Out Masks (`.scroll-fade-y`, `.scroll-fade-x`)**:
+  - Implemented Apple/Linear-style edge gradient transparency masks on scrollable containers (transcript editor, quota history list, and horizontal menus) so text and content smoothly fade into transparency at the container boundaries instead of hard clipping.
+- **Scroll-Driven Reveal (`useScrollReveal`)**:
+  - Added an interactive IntersectionObserver hook with smooth `opacity` and `translate-y` transitions (`reveal-on-scroll`, `animate-fade-in-up`) for the Hero section, Before/After 60FPS Slider, Quota Calculator, Feature cards, and CTA sections.
+
+---
+
 ## [1.0.2] - 2026-11-17
 
 ### Mobile & Laptop Cross-Device Optimization

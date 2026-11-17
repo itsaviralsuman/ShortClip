@@ -1,6 +1,6 @@
 import React from 'react';
 import { TranscriptWord } from '../../types';
-import { Scissors, Trash2, RotateCcw, Volume2, Sparkles, Filter, Check } from 'lucide-react';
+import { Scissors, Trash2, RotateCcw, Sparkles } from 'lucide-react';
 
 interface TranscriptPanelProps {
   words: TranscriptWord[];
@@ -25,14 +25,14 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
   return (
     <div className="flex flex-col h-full bg-studio-950 border-r border-slate-800 text-xs">
       {/* Panel Header */}
-      <div className="p-4 border-b border-slate-800 shrink-0 space-y-3">
+      <div className="p-3 sm:p-4 border-b border-slate-800 shrink-0 space-y-2.5 sm:space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-lg bg-brand-emerald/20 text-brand-emerald border border-emerald-500/30">
               <Scissors className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-white text-sm">Edit-by-Transcript</h3>
+              <h3 className="font-bold text-white text-xs sm:text-sm">Edit-by-Transcript</h3>
               <p className="text-[10px] text-slate-400">Doc-Style Precision Video Editor</p>
             </div>
           </div>
@@ -64,15 +64,15 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
         </div>
 
         {deletedCount > 0 && (
-          <div className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 flex items-center justify-between">
+          <div className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 flex items-center justify-between animate-fade-in">
             <span>{deletedCount} word(s) cut from video</span>
             <span className="font-mono text-slate-400">Frames muted</span>
           </div>
         )}
       </div>
 
-      {/* Transcript Words Stream */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Transcript Words Stream with Edge Scroll Fade Mask */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-fade-y">
         {/* Render grouped by speaker */}
         {['Speaker 1', 'Speaker 2'].map(speakerName => {
           const speakerWords = words.filter(w => w.speaker === speakerName);
@@ -97,11 +97,11 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                       key={word.id}
                       onClick={() => onSeek(word.start)}
                       onDoubleClick={() => onToggleWordDeleted(word.id)}
-                      className={`cursor-pointer px-1.5 py-0.5 rounded transition select-none group relative inline-flex items-center gap-0.5 ${
+                      className={`cursor-pointer px-1.5 py-0.5 rounded transition-all duration-200 select-none group relative inline-flex items-center gap-0.5 ${
                         isDeleted
                           ? 'line-through text-red-400/60 bg-red-950/30 border border-red-900/40'
                           : isActive
-                          ? 'bg-brand-purple text-white font-bold scale-105 shadow-md shadow-purple-500/30'
+                          ? 'bg-brand-purple text-white font-bold scale-105 shadow-md shadow-purple-500/30 ring-1 ring-purple-300'
                           : word.isFiller
                           ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
                           : 'text-slate-200 hover:bg-studio-800 hover:text-white'
@@ -117,7 +117,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({
                           e.stopPropagation();
                           onToggleWordDeleted(word.id);
                         }}
-                        className="hidden group-hover:inline-block ml-0.5 text-slate-400 hover:text-red-400"
+                        className="hidden group-hover:inline-block ml-0.5 text-slate-400 hover:text-red-400 transition"
                       >
                         {isDeleted ? <RotateCcw className="w-2.5 h-2.5" /> : <Trash2 className="w-2.5 h-2.5" />}
                       </button>
