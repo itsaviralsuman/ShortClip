@@ -7,7 +7,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  ShieldCheck,
   FileVideo,
   Sparkles
 } from 'lucide-react';
@@ -80,7 +79,6 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
     videoEl.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      // Fallback: estimate based on size ~ 20MB per minute
       const estimatedMinutes = Math.min(240, Math.max(5, Math.round(file.size / (1024 * 1024 * 25))));
       setLocalFileDuration(estimatedMinutes);
       setIsProbingDuration(false);
@@ -141,24 +139,24 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-        <div className="relative w-full max-w-xl rounded-2xl glass-panel-elevated border border-purple-500/40 p-6 shadow-2xl overflow-hidden">
+      <div className="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+        <div className="relative w-full max-w-xl rounded-2xl glass-panel-elevated border border-purple-500/40 p-4 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] overflow-y-auto">
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-brand-purple/20 text-brand-purple border border-purple-500/30">
-                <Video className="w-5 h-5" />
+              <div className="p-1.5 sm:p-2 rounded-xl bg-brand-purple/20 text-brand-purple border border-purple-500/30">
+                <Video className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Universal Video Ingestion</h3>
-                <p className="text-xs text-slate-400">Strict 24-Hour Rolling Quota Verification</p>
+                <h3 className="text-sm sm:text-base font-bold text-white">Universal Video Ingestion</h3>
+                <p className="text-[10px] sm:text-xs text-slate-400">Strict 24-Hour Rolling Quota Verification</p>
               </div>
             </div>
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-studio-800 transition"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
@@ -166,34 +164,34 @@ export const UploadModal: React.FC<UploadModalProps> = ({
           <div className="grid grid-cols-2 gap-2 mt-4 p-1 rounded-xl bg-studio-900 border border-slate-800">
             <button
               onClick={() => setActiveTab('local')}
-              className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2 rounded-lg text-xs font-semibold transition ${
                 activeTab === 'local'
                   ? 'bg-brand-purple text-white shadow-md shadow-purple-500/30'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <UploadCloud className="w-4 h-4" />
+              <UploadCloud className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Direct File Upload</span>
             </button>
             <button
               onClick={() => setActiveTab('url')}
-              className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2 rounded-lg text-xs font-semibold transition ${
                 activeTab === 'url'
                   ? 'bg-brand-purple text-white shadow-md shadow-purple-500/30'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <LinkIcon className="w-4 h-4" />
-              <span>Universal URL Ingestion</span>
+              <LinkIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>URL Ingestion</span>
             </button>
           </div>
 
           {/* Form Content */}
-          <div className="mt-5 space-y-4">
+          <div className="mt-4 sm:mt-5 space-y-4">
             {activeTab === 'local' ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="p-8 rounded-xl border-2 border-dashed border-slate-700 hover:border-brand-purple/60 bg-studio-950/80 cursor-pointer text-center space-y-3 transition group"
+                className="p-6 sm:p-8 rounded-xl border-2 border-dashed border-slate-700 hover:border-brand-purple/60 bg-studio-950/80 cursor-pointer text-center space-y-2 sm:space-y-3 transition group"
               >
                 <input
                   ref={fileInputRef}
@@ -203,25 +201,27 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   className="hidden"
                 />
 
-                <div className="w-12 h-12 rounded-full bg-studio-800 border border-slate-700 text-brand-purple mx-auto flex items-center justify-center group-hover:scale-110 transition duration-200">
-                  <FileVideo className="w-6 h-6" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-studio-800 border border-slate-700 text-brand-purple mx-auto flex items-center justify-center group-hover:scale-110 transition duration-200">
+                  <FileVideo className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
 
                 {selectedFile ? (
                   <div>
-                    <p className="text-sm font-semibold text-white">{selectedFile.name}</p>
-                    <p className="text-xs text-purple-300 font-mono mt-0.5">
+                    <p className="text-xs sm:text-sm font-semibold text-white truncate max-w-xs mx-auto">
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-[11px] text-purple-300 font-mono mt-0.5">
                       {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB •{' '}
                       {isProbingDuration ? 'Probing duration...' : `${localFileDuration} minutes`}
                     </p>
                   </div>
                 ) : (
                   <div>
-                    <p className="text-sm font-semibold text-slate-200">
-                      Click to choose video or drag and drop
+                    <p className="text-xs sm:text-sm font-semibold text-slate-200">
+                      Tap to choose video file
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Supports MP4, MOV, MKV, WebM, AVI (Up to 4 Hours / 240 mins)
+                    <p className="text-[10px] sm:text-xs text-slate-400 mt-1">
+                      Supports MP4, MOV, MKV, WebM, AVI (Up to 4h / 240m)
                     </p>
                   </div>
                 )}
@@ -236,7 +236,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                     type="text"
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="YouTube, Twitch, Rumble, Loom, Zoom, Drive, Vimeo..."
+                    placeholder="YouTube, Twitch, Rumble, Loom, Zoom, Vimeo..."
                     className="w-full px-3 py-2 rounded-xl bg-studio-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:border-brand-purple outline-none"
                   />
                 </div>
@@ -273,73 +273,73 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   />
                   <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
                     <span>15m</span>
-                    <span>60m (1h)</span>
-                    <span>120m (2h)</span>
-                    <span>240m (4h Max)</span>
-                    <span className="text-red-400">300m (Over Limit)</span>
+                    <span>60m</span>
+                    <span>120m</span>
+                    <span>240m</span>
+                    <span className="text-red-400">300m</span>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Live Quota Pre-Flight Check Box */}
-            <div className="p-3.5 rounded-xl bg-studio-900 border border-slate-800 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Remaining in 24h Window:</span>
+            <div className="p-3 sm:p-3.5 rounded-xl bg-studio-900 border border-slate-800 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Remaining 24h Quota:</span>
                 <span className="font-mono font-bold text-brand-emerald">
-                  {remainingMinutes} mins / 480 mins
+                  {remainingMinutes}m / 480m
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between">
                 <span className="text-slate-400">This Video Duration:</span>
                 <span className="font-mono font-bold text-purple-300">
-                  {currentDuration} mins
+                  {currentDuration}m
                 </span>
               </div>
 
               {/* Status Indicator */}
               {exceedsSingleLimit ? (
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-xs mt-2">
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-[11px] mt-2">
                   <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Blocked:</strong> Exceeds single video limit of 240 mins (4 Hours). Please trim the file before repurposing.
+                    <strong>Blocked:</strong> Exceeds single video limit of 240 mins (4 Hours).
                   </div>
                 </div>
               ) : exceedsRollingQuota ? (
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs mt-2">
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] mt-2">
                   <Clock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Quota Reached:</strong> Needs {currentDuration} mins, but only {remainingMinutes} mins remain. Quota resets in <span className="font-mono font-bold">{countdownFormatted}</span>.
+                    <strong>Quota Reached:</strong> Needs {currentDuration}m, but only {remainingMinutes}m remain. Resets in <span className="font-mono font-bold">{countdownFormatted}</span>.
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs mt-2">
-                  <CheckCircle className="w-4 h-4 text-brand-emerald shrink-0" />
-                  <span>Quota Check Passed! Video fits inside your 24-hour limit.</span>
+                <div className="flex items-center gap-2 p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] mt-2">
+                  <CheckCircle className="w-3.5 h-3.5 text-brand-emerald shrink-0" />
+                  <span>Quota Check Passed! Video fits within your 24h limit.</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Action Footer */}
-          <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 sm:gap-3 mt-5 pt-3 sm:pt-4 border-t border-slate-800">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition"
+              className="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition"
             >
               Cancel
             </button>
             <button
               disabled={isUploadBlocked}
               onClick={handleProceedToConfig}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg transition ${
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 sm:gap-2 shadow-lg transition ${
                 isUploadBlocked
                   ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white shadow-purple-500/30'
               }`}
             >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>Configure AI & Repurpose</span>
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
+              <span>Configure AI</span>
             </button>
           </div>
         </div>

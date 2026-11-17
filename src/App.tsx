@@ -51,11 +51,11 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-studio-950 text-slate-100">
-      {/* 1. Sticky Developer Quota Testing Bar */}
+    <div className="min-h-screen flex flex-col bg-studio-950 text-slate-100 selection:bg-brand-purple/30 selection:text-purple-200">
+      {/* 1. Sticky Developer Quota Testing Bar (Collapsible on mobile) */}
       <DevToolbar />
 
-      {/* 2. Top Navigation Bar with Live Quota Mini-Gauge */}
+      {/* 2. Top Navigation Bar with Mobile Drawer & Live Quota Mini-Gauge */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -66,8 +66,8 @@ const MainApp: React.FC = () => {
         clipsCount={activeProject?.clipsCount || 4}
       />
 
-      {/* 3. Main Body Content Based on Active Tab */}
-      <main className="flex-1">
+      {/* 3. Main Body Content Based on Active Tab (with mobile bottom padding for quick-nav bar) */}
+      <main className="flex-1 pb-16 md:pb-0">
         {activeTab === 'landing' && (
           <LandingPage
             onStartRepurposing={() => {
@@ -105,7 +105,7 @@ const MainApp: React.FC = () => {
         />
       )}
 
-      {/* 5. Fullscreen Vizard Studio Modal (Multi-Track & Transcript Editor) */}
+      {/* 5. Fullscreen Vizard Studio Modal (Multi-Track & Transcript Editor with Mobile Tab Switcher) */}
       {isEditorOpen && selectedClip && (
         <StudioEditorModal
           clip={selectedClip}
