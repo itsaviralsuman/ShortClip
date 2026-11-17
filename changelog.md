@@ -4,6 +4,17 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.0.1] - 2026-11-17
+
+### Added & Published
+- **GitHub Remote Push**:
+  - Initialized git repository on branch `main`.
+  - Added `.gitignore` to protect `node_modules` and `dist`.
+  - Created complete `README.md` with system overview, architecture breakdown, and local setup instructions.
+  - Successfully published and pushed codebase to **[https://github.com/itsaviralsuman/ShortClip](https://github.com/itsaviralsuman/ShortClip)**.
+
+---
+
 ## [1.0.0] - 2026-11-17
 
 ### Added
