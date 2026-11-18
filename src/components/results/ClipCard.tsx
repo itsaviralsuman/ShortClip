@@ -42,7 +42,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
   // Dynamic template details from the 35 OpusClip styles
   const tpl = getTemplateById(clip.captionTemplateId);
 
-  // Time tracking for dynamic caption synchronization
+  // Time tracking for dynamic caption synchronization & cut looping
   useEffect(() => {
     let interval: any;
     if (isPlaying) {
@@ -50,14 +50,29 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
         if (videoRef.current) {
           setCurrentTime(videoRef.current.currentTime);
         } else {
-          setCurrentTime((t) => (t >= clip.duration ? 0 : Number((t + 0.1).toFixed(1))));
+          setCurrentTime((t) => {
+            if (t >= clip.duration) {
+              if (iframeRef.current?.contentWindow) {
+                iframeRef.current.contentWindow.postMessage(
+                  JSON.stringify({ event: 'command', func: 'seekTo', args: [Math.floor(clip.startTime), true] }),
+                  '*'
+                );
+                iframeRef.current.contentWindow.postMessage(
+                  JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+                  '*'
+                );
+              }
+              return 0;
+            }
+            return Number((t + 0.1).toFixed(1));
+          });
         }
       }, 100);
     } else {
       setCurrentTime(0);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, clip.duration]);
+  }, [isPlaying, clip.duration, clip.startTime]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -447,6 +462,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
             <button
               onClick={() => onOpenStudio(clip)}
+              data-testid="clipcard-studio-btn"
               className="flex-1 sm:flex-initial px-3 py-1.5 sm:py-2 rounded-xl bg-studio-800 hover:bg-studio-700 text-slate-100 border border-slate-700 text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95"
             >
               <Scissors className="w-3.5 h-3.5 text-brand-emerald" />

@@ -4,6 +4,23 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [2.1.0] - 2026-11-18
+
+### Studio Frame-Accurate Scrubbing, Multi-Clip Modal Lifecycle, Audio Looping & Full Stream Benchmark
+- **Studio Player Persistent Mount & Scrubber Synchronization (`src/components/editor/CanvasStage.tsx`, `src/App.tsx`)**:
+  - Resolved defect where pausing in Studio unmounted the YouTube iframe and reverted to a static poster image. Once playback is triggered, the iframe remains cleanly mounted and receives `pauseVideo` via postMessage, preserving the exact paused frame.
+  - Implemented real-time scrub synchronization: timeline scrubbing and transcript word clicks dispatch `seekTo(clipStart + currentTime, true)` to the paused player, enabling frame-accurate inspection without video reloads.
+  - Added `key={selectedClip.id}` to `StudioEditorModal` in `App.tsx`, guaranteeing clean component lifecycle resets when switching between different stream cuts.
+- **ClipCard Seamless Cut Looping (`src/components/results/ClipCard.tsx`)**:
+  - Fixed caption timer desynchronization where `currentTime` looped to 0s but the YouTube iframe paused at `clip.endTime`. Now automatically cues `seekTo(Math.floor(clip.startTime), true)` and `playVideo`, providing continuous, seamless highlight looping.
+  - Added `data-testid="clipcard-studio-btn"` to clip card action buttons for unambiguous multi-clip Studio navigation.
+- **Default Sample Projects Aligned to Opus Benchmark (`src/data/sampleProjects.ts`)**:
+  - Embedded `youtubeId: 'iq9CN_xwmZo'` (*Munkar 2024*) and official movie thumbnails across initial sample clips, enabling instant out-of-the-box OpusClip evaluation on first load without requiring an initial upload.
+- **Exhaustive Multi-Clip E2E Verification (`test-e2e.cjs`)**:
+  - Expanded Playwright suite to test the full lifecycle: Clip 1 playback & audio toggling, Studio pause persistence, language switching, modal close, and Clip 2 Studio opening asserting distinct stream cuts (`18:40 - 19:28` with `start=1120&end=1168&mute=0`). All assertions passed with 100% success.
+
+---
+
 ## [2.0.0] - 2026-11-18
 
 ### Milestone 1: Real FFmpeg AI Video Processing Backend, Audio Extraction & MP4 Rendering

@@ -111,6 +111,7 @@ const MainApp: React.FC = () => {
       {/* 5. Fullscreen Vizard Studio Modal (Multi-Track, 35 Styles, Auto-Zoom, AI Emojis & Auto B-Roll) */}
       {isEditorOpen && selectedClip && (
         <StudioEditorModal
+          key={selectedClip.id}
           clip={selectedClip}
           onClose={closeEditor}
         />

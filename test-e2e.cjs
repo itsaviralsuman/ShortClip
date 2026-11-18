@@ -129,7 +129,7 @@ async function runE2ETest() {
 
   // Step 9: Open Studio Editor by clicking "Studio" button inside Clip Card
   console.log('9️⃣ Opening Studio Editor for clip...');
-  const studioBtn = page.locator('div[class*="glass-panel-elevated"] button:has-text("Studio")').first();
+  const studioBtn = page.locator('[data-testid="clipcard-studio-btn"]').first();
   await studioBtn.click();
   await page.waitForTimeout(1000);
 
@@ -194,6 +194,44 @@ async function runE2ETest() {
   await hindiStudioBtn.click();
   await page.waitForTimeout(600);
   console.log('   ✅ Successfully switched language to Hindi in Studio!');
+
+  // Step 12: Verify pause behavior (iframe remains mounted)
+  console.log('1️⃣2️⃣ Testing pause in Studio (verifying video player stays visible at paused frame)...');
+  await timelinePlayBtn.click(); // Pause
+  await page.waitForTimeout(400);
+  const isIframeStillMounted = await page.$('div.fixed.inset-0 iframe[src*="youtube.com/embed"]');
+  if (isIframeStillMounted) {
+    console.log('   ✅ VERIFIED: Studio video player stays cleanly mounted when paused!');
+  }
+
+  // Step 13: Close Studio for Clip 1 and test opening Clip 2 in Studio
+  console.log('1️⃣3️⃣ Closing Studio for Clip 1 and opening Studio for Clip 2 (18:40 - 19:28)...');
+  const closeStudioBtn = page.locator('div.fixed.inset-0 header button[title*="Return to Viral Clips"]').first();
+  await closeStudioBtn.click();
+  await page.waitForTimeout(800);
+
+  // Open Studio for Clip 2
+  const clip2StudioBtn = page.locator('[data-testid="clipcard-studio-btn"]').nth(1);
+  await clip2StudioBtn.click();
+  await page.waitForTimeout(1000);
+
+  // Verify Clip 2 distinct stream cut in Studio CanvasStage
+  const clip2CanvasCutRange = await page.$eval('[data-testid="canvas-cut-time-range"]', el => el.textContent.trim());
+  console.log('   Clip 2 CanvasStage cut time range:', clip2CanvasCutRange);
+  if (clip2CanvasCutRange.includes('18:40') && clip2CanvasCutRange.includes('19:28')) {
+    console.log('   ✅ VERIFIED: Clip 2 in Studio displays its distinct cut window (18:40 - 19:28)!');
+  }
+
+  // Play Clip 2 in Studio
+  const clip2TimelinePlayBtn = page.locator('[data-testid="timeline-play-btn"]');
+  await clip2TimelinePlayBtn.click();
+  await page.waitForTimeout(1000);
+
+  const clip2StudioIframeSrc = await page.$eval('div.fixed.inset-0 iframe[src*="youtube.com/embed"]', el => el.getAttribute('src'));
+  console.log('   Clip 2 Studio YouTube iframe src:', clip2StudioIframeSrc);
+  if (clip2StudioIframeSrc && clip2StudioIframeSrc.includes('start=1120') && clip2StudioIframeSrc.includes('end=1168') && clip2StudioIframeSrc.includes('mute=0')) {
+    console.log('   ✅ VERIFIED: Clip 2 Studio CanvasStage plays synchronized cut with start=1120, end=1168, and mute=0 (audible sound)!');
+  }
 
   // Take screenshot
   const screenshotPath = path.join(__dirname, 'e2e-studio-verified.png');

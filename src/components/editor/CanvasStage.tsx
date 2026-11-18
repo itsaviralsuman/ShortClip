@@ -68,12 +68,25 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
   words,
   bRollTracks
 }) => {
+  const [hasStarted, setHasStarted] = React.useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const guestIframeRef = useRef<HTMLIFrameElement>(null);
   const lastSyncedTimeRef = useRef<number>(0);
 
   const clipStart = Math.floor(startTime || 0);
   const clipEnd = Math.floor(endTime || (clipStart + duration));
+
+  // Mount iframe on first play and keep mounted so paused frame & scrub are visible
+  useEffect(() => {
+    if (isPlaying && !hasStarted) {
+      setHasStarted(true);
+    }
+  }, [isPlaying, hasStarted]);
+
+  useEffect(() => {
+    setHasStarted(false);
+  }, [youtubeId, clipStart]);
 
   // Sync play state
   useEffect(() => {
@@ -85,9 +98,15 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
         videoRef.current.pause();
       }
     }
+    const cmd = isPlaying ? 'playVideo' : 'pauseVideo';
     if (iframeRef.current?.contentWindow) {
-      const cmd = isPlaying ? 'playVideo' : 'pauseVideo';
       iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: cmd, args: [] }),
+        '*'
+      );
+    }
+    if (guestIframeRef.current?.contentWindow) {
+      guestIframeRef.current.contentWindow.postMessage(
         JSON.stringify({ event: 'command', func: cmd, args: [] }),
         '*'
       );
@@ -125,6 +144,13 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
         const targetTime = clipStart + currentTime;
         iframeRef.current.contentWindow.postMessage(
           JSON.stringify({ event: 'command', func: 'seekTo', args: [targetTime, true] }),
+          '*'
+        );
+      }
+      if (guestIframeRef.current?.contentWindow) {
+        const guestTarget = clipStart + 5 + currentTime;
+        guestIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'seekTo', args: [guestTarget, true] }),
           '*'
         );
       }
@@ -202,7 +228,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
               {/* Top Speaker: Host (Using Real Media / YouTube Stream) */}
               <div className="relative flex-1 bg-black overflow-hidden border-b-2 border-brand-purple">
                 {youtubeId ? (
-                  isPlaying ? (
+                  (hasStarted || isPlaying) ? (
                     <iframe
                       ref={iframeRef}
                       src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&start=${clipStart}&end=${clipEnd}&enablejsapi=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
@@ -218,6 +244,12 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
                           if (!isMuted) {
                             iframeRef.current.contentWindow.postMessage(
                               JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+                              '*'
+                            );
+                          }
+                          if (!isPlaying) {
+                            iframeRef.current.contentWindow.postMessage(
+                              JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
                               '*'
                             );
                           }
@@ -258,12 +290,21 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
               {/* Bottom Speaker: Guest / Context Track */}
               <div className="relative flex-1 bg-black overflow-hidden">
                 {youtubeId ? (
-                  isPlaying ? (
+                  (hasStarted || isPlaying) ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&start=${clipStart + 5}&end=${clipEnd}`}
+                      ref={guestIframeRef}
+                      src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&start=${clipStart + 5}&end=${clipEnd}&enablejsapi=1`}
                       title="Guest Track"
                       className="w-full h-full object-cover pointer-events-none scale-150 origin-bottom"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      onLoad={() => {
+                        if (guestIframeRef.current?.contentWindow && !isPlaying) {
+                          guestIframeRef.current.contentWindow.postMessage(
+                            JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
+                            '*'
+                          );
+                        }
+                      }}
                     />
                   ) : (
                     <img
@@ -298,7 +339,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
           ) : (
             <div className="relative w-full h-full">
               {youtubeId ? (
-                isPlaying ? (
+                (hasStarted || isPlaying) ? (
                   <iframe
                     ref={iframeRef}
                     src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&start=${clipStart}&end=${clipEnd}&enablejsapi=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
@@ -314,6 +355,12 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
                         if (!isMuted) {
                           iframeRef.current.contentWindow.postMessage(
                             JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+                            '*'
+                          );
+                        }
+                        if (!isPlaying) {
+                          iframeRef.current.contentWindow.postMessage(
+                            JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
                             '*'
                           );
                         }
@@ -420,7 +467,10 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
 
         {/* Click to Play/Pause overlay */}
         <button
-          onClick={onTogglePlay}
+          onClick={() => {
+            if (!hasStarted) setHasStarted(true);
+            onTogglePlay();
+          }}
           data-testid="canvas-play-btn"
           className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover:bg-black/5 transition"
         >

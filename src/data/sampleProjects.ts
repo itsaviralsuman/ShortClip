@@ -78,7 +78,8 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       source: 'ai_stock',
       kenBurnsTransition: true
     },
-    previewThumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&auto=format&fit=crop&q=80',
+    previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
+    youtubeId: 'iq9CN_xwmZo',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     targetPlatform: ['TikTok', 'Instagram Reels', 'YouTube Shorts'],
     virality: {
@@ -134,7 +135,8 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       source: 'motion_graphics',
       kenBurnsTransition: true
     },
-    previewThumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
+    previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
+    youtubeId: 'iq9CN_xwmZo',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
     targetPlatform: ['YouTube Shorts', 'TikTok'],
     virality: {
@@ -189,7 +191,8 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       source: 'cinematic',
       kenBurnsTransition: true
     },
-    previewThumbnail: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&auto=format&fit=crop&q=80',
+    previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
+    youtubeId: 'iq9CN_xwmZo',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
     targetPlatform: ['Instagram Reels', 'TikTok', 'LinkedIn'],
     virality: {
@@ -242,7 +245,8 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       source: 'ai_stock',
       kenBurnsTransition: true
     },
-    previewThumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80',
+    previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
+    youtubeId: 'iq9CN_xwmZo',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
     targetPlatform: ['YouTube Shorts', 'LinkedIn'],
     virality: {
@@ -270,12 +274,13 @@ export const SAMPLE_CLIPS: ViralClip[] = [
 export const INITIAL_PROJECTS: VideoProject[] = [
   {
     id: 'proj-1',
-    title: 'The $100M Founder Playbook: Building Scaling Systems & AI Leverage',
+    title: 'MUNKAR (2024) Full Movie Indonesia — OpusClip Repurposed Stream',
     sourceType: 'url',
-    sourceUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    durationMinutes: 58,
-    durationFormatted: '58m 20s',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&auto=format&fit=crop&q=80',
+    sourceUrl: 'https://youtu.be/iq9CN_xwmZo?si=2PpfrmaHxNGCbEW9',
+    youtubeId: 'iq9CN_xwmZo',
+    durationMinutes: 85,
+    durationFormatted: '85m 00s',
+    thumbnailUrl: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     uploadedAt: Date.now() - (3 * 60 * 60 * 1000), // 3 hours ago
     status: 'completed',
     progress: 100,
