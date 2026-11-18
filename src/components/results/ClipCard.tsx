@@ -19,6 +19,7 @@ import {
 import confetti from 'canvas-confetti';
 import { ViralClip } from '../../types';
 import { getTemplateById } from '../../data/captionTemplates';
+import { getOpusCaptionChunk } from '../../utils/captionChunker';
 
 interface ClipCardProps {
   clip: ViralClip;
@@ -84,10 +85,8 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
     setTimeout(() => setCopiedCaption(false), 2000);
   };
 
-  // Find active words based on currentTime
-  const activeWord = clip.words.find(
-    (w) => !w.isDeleted && currentTime >= w.start && currentTime <= w.end
-  );
+  // Find active words and Opus karaoke chunk based on currentTime
+  const { chunkWords, activeWord } = getOpusCaptionChunk(clip.words, currentTime, 'karaoke_phrase', 4);
 
   const shouldZoomPunch =
     clip.autoZoom?.enabled &&
@@ -144,40 +143,42 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           </div>
         </div>
 
-        {/* Dynamic Animated Captions with 35 presets styling */}
-        <div className="absolute inset-x-3 bottom-12 sm:bottom-14 z-20 pointer-events-none text-center">
-          {activeWord ? (
-            <div className="inline-flex flex-col items-center">
-              {clip.emojiConfig?.enabled && clip.emojiConfig.position === 'above' && activeWord.emoji && (
-                <span className="text-xl animate-bounce mb-0.5">{activeWord.emoji}</span>
-              )}
-              <div
-                style={{
-                  fontFamily: tpl.fontFamily,
-                  color: tpl.activeWordColor,
-                  textShadow: tpl.textShadow,
-                  backgroundColor: tpl.backgroundColor || 'transparent'
-                }}
-                className={`text-lg sm:text-xl font-black ${tpl.textTransform} px-2 py-0.5 rounded-md transform scale-105 transition-transform duration-100`}
-              >
-                {activeWord.text}
-                {clip.emojiConfig?.enabled && clip.emojiConfig.position === 'inline' && activeWord.emoji && (
-                  <span className="ml-1 text-sm">{activeWord.emoji}</span>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{
-                fontFamily: tpl.fontFamily,
-                color: tpl.textColor,
-                textShadow: tpl.textShadow
-              }}
-              className={`text-sm sm:text-base font-bold opacity-80 ${tpl.textTransform}`}
-            >
-              {clip.words.slice(0, 3).map((w) => w.text).join(' ')}
-            </div>
-          )}
+        {/* Dynamic Animated Opus Karaoke Captions */}
+        <div className="absolute inset-x-2 bottom-12 sm:bottom-14 z-20 pointer-events-none text-center px-1">
+          <div className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 max-w-full">
+            {chunkWords.map((w) => {
+              const isActive = activeWord?.id === w.id;
+              return (
+                <span key={w.id} className="relative inline-flex flex-col items-center">
+                  {/* AI Emoji Above Active Word */}
+                  {clip.emojiConfig?.enabled && clip.emojiConfig.position === 'above' && w.emoji && isActive && (
+                    <span className="absolute -top-6 text-lg sm:text-xl animate-bounce z-30">
+                      {w.emoji}
+                    </span>
+                  )}
+
+                  <span
+                    style={{
+                      fontFamily: tpl.fontFamily,
+                      color: isActive ? tpl.activeWordColor : tpl.textColor,
+                      textShadow: tpl.textShadow,
+                      backgroundColor: isActive && tpl.backgroundColor ? tpl.backgroundColor : 'transparent'
+                    }}
+                    className={`font-black ${tpl.textTransform} transition-all duration-100 ${
+                      isActive
+                        ? 'scale-110 text-base sm:text-lg px-1 py-0.5 rounded drop-shadow-xl z-10'
+                        : 'scale-100 text-xs sm:text-sm opacity-90'
+                    }`}
+                  >
+                    {w.text}
+                    {clip.emojiConfig?.enabled && clip.emojiConfig.position === 'inline' && w.emoji && isActive && (
+                      <span className="ml-0.5 text-xs">{w.emoji}</span>
+                    )}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
         </div>
 
         {/* Speaker Mode & Zoom Indicator */}

@@ -50,7 +50,10 @@ export const AuthModal: React.FC = () => {
       setError('Please enter the verification code');
       return;
     }
-    signInWithEmail(email, name);
+    const granted = signInWithEmail(email, name);
+    if (!granted) {
+      closeAuthModal();
+    }
   };
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -59,7 +62,10 @@ export const AuthModal: React.FC = () => {
       setError('Please enter a valid email address');
       return;
     }
-    signInWithEmail(email, name);
+    const granted = signInWithEmail(email, name);
+    if (!granted) {
+      closeAuthModal();
+    }
   };
 
   return (
@@ -109,7 +115,10 @@ export const AuthModal: React.FC = () => {
             <div className="space-y-2 mb-4">
               <button
                 type="button"
-                onClick={() => signInWithGoogle()}
+                onClick={() => {
+                  const granted = signInWithGoogle();
+                  if (!granted) closeAuthModal();
+                }}
                 className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs flex items-center justify-center gap-2.5 transition shadow active:scale-95"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -135,7 +144,10 @@ export const AuthModal: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => signInWithGithub()}
+                onClick={() => {
+                  const granted = signInWithGithub();
+                  if (!granted) closeAuthModal();
+                }}
                 className="w-full py-2.5 px-4 rounded-xl bg-studio-900 hover:bg-studio-800 text-white font-semibold text-xs border border-slate-700 flex items-center justify-center gap-2.5 transition active:scale-95"
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">

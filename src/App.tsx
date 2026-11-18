@@ -10,6 +10,9 @@ import { QuotaAnalyticsPage } from './components/analytics/QuotaAnalyticsPage';
 import { UploadModal } from './components/dashboard/UploadModal';
 import { StudioEditorModal } from './components/editor/StudioEditorModal';
 import { AuthModal } from './components/auth/AuthModal';
+import { SeatLimitModal } from './components/auth/SeatLimitModal';
+import { SecurityToast } from './components/auth/SecurityToast';
+import { SecurityInboxModal } from './components/auth/SecurityInboxModal';
 import { ViralClip } from './types';
 
 const MainApp: React.FC = () => {
@@ -113,6 +116,13 @@ const MainApp: React.FC = () => {
 
       {/* 6. Sign In / Sign Up Modal */}
       <AuthModal />
+
+      {/* 7. 3-Device Workspace Seat Limiter Modal */}
+      <SeatLimitModal />
+
+      {/* 8. Transactional Security Email Notification Drawer & Inbox */}
+      <SecurityToast />
+      <SecurityInboxModal />
     </div>
   );
 };

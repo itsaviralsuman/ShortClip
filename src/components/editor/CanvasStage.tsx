@@ -9,11 +9,13 @@ import {
   AutoBRollConfig
 } from '../../types';
 import { getTemplateById } from '../../data/captionTemplates';
+import { getOpusCaptionChunk } from '../../utils/captionChunker';
 import {
   Play,
   Pause,
   Scan,
-  ZoomIn
+  ZoomIn,
+  Type
 } from 'lucide-react';
 
 interface CanvasStageProps {
@@ -73,10 +75,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
     }
   }, [currentTime]);
 
-  // Determine active word
-  const activeWord = words.find(
-    (w) => !w.isDeleted && currentTime >= w.start && currentTime <= w.end
-  );
+  // Determine OpusClip active chunk & active word
+  const { chunkWords, activeWord } = getOpusCaptionChunk(words, currentTime, 'karaoke_phrase', 4);
 
   // Determine active B-roll overlay
   const activeBRoll = bRollConfig.enabled
@@ -225,45 +225,42 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
           />
         </div>
 
-        {/* 35 Dynamic Animated Captions Engine */}
-        <div className="absolute inset-x-2 sm:inset-x-3 bottom-12 sm:bottom-16 z-30 pointer-events-none text-center">
-          {activeWord ? (
-            <div className="inline-flex flex-col items-center">
-              {/* AI Emoji Above Word */}
-              {emojiConfig.enabled && emojiConfig.position === 'above' && activeWord.emoji && (
-                <span className="text-xl sm:text-2xl animate-bounce mb-1">
-                  {activeWord.emoji}
-                </span>
-              )}
+        {/* OpusClip Dynamic Animated Karaoke Captions Engine */}
+        <div className="absolute inset-x-2 sm:inset-x-3 bottom-12 sm:bottom-16 z-30 pointer-events-none text-center px-1">
+          <div className="inline-flex flex-wrap items-center justify-center gap-x-1.5 sm:gap-x-2 gap-y-1 max-w-full">
+            {chunkWords.map((w) => {
+              const isActive = activeWord?.id === w.id;
+              return (
+                <span key={w.id} className="relative inline-flex flex-col items-center">
+                  {/* AI Emoji Above Active Word */}
+                  {emojiConfig.enabled && emojiConfig.position === 'above' && w.emoji && isActive && (
+                    <span className="absolute -top-7 sm:-top-8 text-xl sm:text-2xl animate-bounce z-40">
+                      {w.emoji}
+                    </span>
+                  )}
 
-              {/* Dynamic Styled Word with 35 presets styling */}
-              <div
-                style={{
-                  fontFamily: tpl.fontFamily,
-                  color: tpl.activeWordColor,
-                  textShadow: tpl.textShadow,
-                  backgroundColor: tpl.backgroundColor || 'transparent'
-                }}
-                className={`${tpl.fontSize} font-black ${tpl.textTransform} px-2 py-0.5 rounded-lg transform scale-105 transition-all duration-100`}
-              >
-                {activeWord.text}
-                {emojiConfig.enabled && emojiConfig.position === 'inline' && activeWord.emoji && (
-                  <span className="ml-1 text-base">{activeWord.emoji}</span>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{
-                fontFamily: tpl.fontFamily,
-                color: tpl.textColor,
-                textShadow: tpl.textShadow
-              }}
-              className={`${tpl.fontSize} font-bold opacity-80 ${tpl.textTransform}`}
-            >
-              {words.slice(0, 3).map((w) => w.text).join(' ')}
-            </div>
-          )}
+                  <span
+                    style={{
+                      fontFamily: tpl.fontFamily,
+                      color: isActive ? tpl.activeWordColor : tpl.textColor,
+                      textShadow: tpl.textShadow,
+                      backgroundColor: isActive && tpl.backgroundColor ? tpl.backgroundColor : 'transparent'
+                    }}
+                    className={`font-black ${tpl.textTransform} transition-all duration-100 ${
+                      isActive
+                        ? 'scale-115 text-lg sm:text-2xl px-1.5 py-0.5 rounded-md drop-shadow-2xl z-20'
+                        : 'scale-100 text-base sm:text-xl opacity-90'
+                    }`}
+                  >
+                    {w.text}
+                    {emojiConfig.enabled && emojiConfig.position === 'inline' && w.emoji && isActive && (
+                      <span className="ml-1 text-sm sm:text-base">{w.emoji}</span>
+                    )}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
         </div>
 
         {/* Click to Play/Pause overlay */}

@@ -9,7 +9,9 @@ import {
   X,
   User,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Mail,
+  Users
 } from 'lucide-react';
 import { QuotaGauge } from './QuotaGauge';
 import { useAuth } from '../../context/AuthContext';
@@ -32,7 +34,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState<boolean>(false);
 
-  const { user, isAuthenticated, openAuthModal, signOut } = useAuth();
+  const {
+    user,
+    isAuthenticated,
+    openAuthModal,
+    signOut,
+    activeSeats,
+    maxSeats,
+    notifications,
+    openSecurityInbox
+  } = useAuth();
 
   const handleTabClick = (tab: ActiveTab) => {
     setActiveTab(tab);
@@ -127,6 +138,30 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="hidden lg:block">
               <QuotaGauge compact />
             </div>
+
+            {/* 3-Seat Concurrency Indicator */}
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-studio-900 border border-slate-700/80 text-xs font-mono"
+              title={`${activeSeats.length} of ${maxSeats} allowed devices currently logged in`}
+            >
+              <Users className="w-3.5 h-3.5 text-brand-emerald" />
+              <span className="text-white font-bold">{activeSeats.length}/{maxSeats}</span>
+              <span className="text-slate-400 text-[10px]">Seats</span>
+            </div>
+
+            {/* Email Notification Inbox Trigger */}
+            <button
+              onClick={openSecurityInbox}
+              title="Security Email Notification Log (Kaise Hua)"
+              className="relative p-2 rounded-xl bg-studio-900 border border-slate-700 hover:border-purple-500/50 text-slate-300 hover:text-white transition"
+            >
+              <Mail className="w-4 h-4 text-purple-400" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-purple text-white text-[9px] font-bold flex items-center justify-center animate-pulse">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
 
             {/* Repurpose Video CTA */}
             <button

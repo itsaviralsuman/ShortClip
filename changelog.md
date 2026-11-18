@@ -4,6 +4,27 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.0.7] - 2026-11-18
+
+### Email Sign-In Alerts, 3-Device Workspace Cap & OpusClip Phrase Karaoke
+- **Sign-In Security Email Notifications (`src/context/AuthContext.tsx`, `src/components/auth/SecurityInboxModal.tsx`, `SecurityToast.tsx`)**:
+  - Implemented automatic transactional security email alert whenever a user logs in.
+  - Generates RFC-822 formatted security email containing user details, timestamp, OS, Browser, Screen type, and Network IP.
+  - Added real-time floating security toast alert + in-app **Security Inbox** reader with full Gmail/Outlook-style template inspection and architectural explanation of how the dispatch pipeline works.
+- **Strict 3-Device / User Workspace Cap (`src/context/AuthContext.tsx`, `src/components/auth/SeatLimitModal.tsx`)**:
+  - Enforced a hard ceiling of `MAX_ACTIVE_SEATS = 3` concurrent active devices/users across the application.
+  - Automatically captures device fingerprints (`getClientDeviceInfo()`).
+  - Blocks any 4th device attempting to sign in with an interactive **Seat Limit Exceeded Modal (3/3 Active Seats Occupied)**.
+  - Added session revocation controls so authorized users can kick idle devices to free up seats.
+  - Added live `Seats: X/3` indicator badge in Navbar.
+- **OpusClip-Style Phrase Karaoke Captions (`src/utils/captionChunker.ts`, `src/components/editor/CanvasStage.tsx`, `src/components/results/ClipCard.tsx`)**:
+  - Replaced isolated single-word subtitle display with true OpusClip-style 3–5 word spoken phrase chunks.
+  - The entire sentence/phrase is visible on screen with high-contrast text and thick black border (Alex Hormozi / MrBeast standard).
+  - Spoken words light up in real time with dynamic template highlight colors (e.g. Neon Yellow `#FACC15`, Lime `#4ADE80`), `scale-115` spring pop, and animated bouncing emojis above keywords.
+  - Fully synchronized across both fullscreen Studio Canvas and Viral Clips cards.
+
+---
+
 ## [1.0.6] - 2026-11-18
 
 ### Toolbar Removal & Vercel Injection Suppression

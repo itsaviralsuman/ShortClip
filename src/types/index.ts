@@ -30,6 +30,35 @@ export interface UserProfile {
   memberSince: string;
 }
 
+export interface EmailSecurityNotification {
+  id: string;
+  toEmail: string;
+  userName: string;
+  subject: string;
+  timestamp: number;
+  deviceInfo: string;
+  browser: string;
+  ipAddress: string;
+  method: 'Email OTP Verification' | 'Direct Email Auth' | 'Google OAuth 2.0' | 'GitHub OAuth';
+  status: 'delivered';
+  read: boolean;
+}
+
+export interface ActiveDeviceSession {
+  deviceId: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  deviceType: 'mobile' | 'desktop' | 'tablet';
+  deviceName: string;
+  browser: string;
+  lastActive: number;
+  ipAddress: string;
+  isCurrentDevice: boolean;
+}
+
+export type CaptionChunkMode = 'karaoke_phrase' | 'single_punch' | 'stacked_lines';
+
 export interface AutoZoomConfig {
   enabled: boolean;
   energy: 'subtle' | 'dynamic' | 'high_energy';
@@ -124,6 +153,8 @@ export interface ViralClip {
   bRollTracks: BRollTrigger[];
   aspectRatio: AspectRatio;
   captionTemplateId: string; // One of the 35 OpusClip styles
+  captionChunkMode?: CaptionChunkMode; // Opus phrase karaoke vs single punch
+  customHighlightColor?: string; // Optional custom active word highlight
   speakerMode: SpeakerMode;
   autoZoom: AutoZoomConfig;
   emojiConfig: EmojiConfig;
