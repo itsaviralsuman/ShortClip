@@ -129,7 +129,7 @@ export interface SocialCaptions {
   instagramReels: string;
   youtubeShorts: string;
   linkedin: string;
-  hashtags: string[];
+  hashtags?: string[];
 }
 
 export interface BRollTrigger {

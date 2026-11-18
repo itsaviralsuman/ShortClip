@@ -54,30 +54,14 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     title: 'Why 99% of Content Creators Burn Out in 30 Days',
     hookTitle: 'WHY 99% CREATORS FAIL 💀',
     startTime: 184.0,
-    endTime: 238.8,
-    duration: 54.8,
+    endTime: 252.4,
+    duration: 68.4,
     aspectRatio: '9:16',
     captionTemplateId: 'hormozi-yellow',
     speakerMode: 'single',
-    autoZoom: {
-      enabled: true,
-      energy: 'dynamic',
-      zoomScale: 1.15,
-      speed: 'smooth'
-    },
-    emojiConfig: {
-      enabled: true,
-      density: 'medium',
-      animation: 'bounce',
-      position: 'above',
-      pack: 'viral_fire'
-    },
-    bRollConfig: {
-      enabled: true,
-      frequency: 'balanced',
-      source: 'ai_stock',
-      kenBurnsTransition: true
-    },
+    autoZoom: { enabled: true, energy: 'dynamic', zoomScale: 1.15, speed: 'smooth' },
+    emojiConfig: { enabled: true, density: 'medium', animation: 'bounce', position: 'above', pack: 'viral_fire' },
+    bRollConfig: { enabled: true, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
@@ -89,21 +73,17 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       pacingScore: 94,
       emotionalPeak: 96,
       retentionProbability: 95,
-      rationale: 'Instant high-stakes provocative opening statement ("creators fail") triggers dopamine retention spike within first 1.8 seconds. Strong contrasting speaker reaction.',
+      rationale: 'Instant high-stakes provocative opening statement triggers dopamine retention spike within first 1.8 seconds.',
       keyTopics: ['Creator Economy', 'Productivity', 'Burnout', 'Viral Systems']
     },
     socialCaptions: {
       tiktok: 'Stop spending 40 hours on one video 💀 Here is how top creators 100x their output with zero extra effort 🚀 #creatorhacks #shorts #viral',
       instagramReels: 'The uncomfortable truth about why 99% of creators quit within 30 days. Save this before your next upload! ⏳👇',
       youtubeShorts: 'Why 40 hours of editing is DESTROYING your channel growth 😱 (Watch till end)',
-      linkedin: 'Content output is not an art problem; it is a distribution system bottleneck. Why multi-format repurposing wins every time.',
-      hashtags: ['#CreatorEconomy', '#ViralShorts', '#ProductivityHacks', '#EntrepreneurMindset']
+      linkedin: 'Content output is not an art problem; it is a distribution system bottleneck.'
     },
     words: SAMPLE_PODCAST_WORDS,
-    bRollTracks: [
-      { id: 'b1', start: 2.3, end: 4.0, keyword: 'editing-desk', previewUrl: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&auto=format&fit=crop&q=60', enabled: true },
-      { id: 'b2', start: 7.9, end: 10.5, keyword: 'viral-metrics', previewUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&auto=format&fit=crop&q=60', enabled: true },
-    ]
+    bRollTracks: []
   },
   {
     id: 'clip-102',
@@ -111,55 +91,36 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     title: 'The "Repurposing Flywheel": Turning 1 Stream into 30 Viral Assets',
     hookTitle: 'THE 1-STREAM 30X FLYWHEEL ⚡',
     startTime: 1120.0,
-    endTime: 1168.2,
-    duration: 48.2,
+    endTime: 1195.2,
+    duration: 75.2,
     aspectRatio: '9:16',
     captionTemplateId: 'mrbeast-comic',
     speakerMode: 'single',
-    autoZoom: {
-      enabled: true,
-      energy: 'high_energy',
-      zoomScale: 1.25,
-      speed: 'punchy'
-    },
-    emojiConfig: {
-      enabled: true,
-      density: 'high',
-      animation: 'pop',
-      position: 'above',
-      pack: 'growth_tech'
-    },
-    bRollConfig: {
-      enabled: true,
-      frequency: 'aggressive',
-      source: 'motion_graphics',
-      kenBurnsTransition: true
-    },
+    autoZoom: { enabled: true, energy: 'high_energy', zoomScale: 1.25, speed: 'punchy' },
+    emojiConfig: { enabled: true, density: 'high', animation: 'pop', position: 'above', pack: 'growth_tech' },
+    bRollConfig: { enabled: true, frequency: 'aggressive', source: 'motion_graphics', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
     targetPlatform: ['YouTube Shorts', 'TikTok'],
     virality: {
-      overallScore: 92,
+      overallScore: 94,
       tier: 'VIRAL SUPERNOVA',
-      hookStrength: 91,
-      pacingScore: 95,
-      emotionalPeak: 89,
-      retentionProbability: 93,
-      rationale: 'Extremely snappy mathematical argument. High word density and punchy metric shifts create strong replayability.',
+      hookStrength: 95,
+      pacingScore: 93,
+      emotionalPeak: 91,
+      retentionProbability: 94,
+      rationale: 'Snappy mathematical argument with punchy metric shifts that creates strong replayability.',
       keyTopics: ['Growth Flywheel', 'Shorts Strategy', 'AI Video', 'Content Scaling']
     },
     socialCaptions: {
-      tiktok: '1 stream = 30 viral shorts every single day 🤯 Try this framework now! #videomarketing #opusclip #contentstrategy',
+      tiktok: '1 stream = 30 viral shorts every single day 🤯 Try this framework now! #videomarketing #opusclip',
       instagramReels: 'The 30x viral framework explained in 8 seconds. Stop trading time for views. 🎯',
       youtubeShorts: 'How to get 30 chances to go viral EVERY SINGLE DAY ⚡',
-      linkedin: 'Operationalizing video production: Turning long-form podcast VODs into modular micro-content.',
-      hashtags: ['#ContentMarketing', '#ShortFormVideo', '#GrowthHacks']
+      linkedin: 'Operationalizing video production: Turning long-form podcast VODs into modular micro-content.'
     },
-    words: SAMPLE_PODCAST_WORDS.slice(21),
-    bRollTracks: [
-      { id: 'b3', start: 8.5, end: 11.0, keyword: 'smartphone-reels', previewUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&auto=format&fit=crop&q=60', enabled: true }
-    ]
+    words: SAMPLE_PODCAST_WORDS,
+    bRollTracks: []
   },
   {
     id: 'clip-103',
@@ -167,52 +128,35 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     title: 'Why Editing 40 Hours for One Video Is Career Suicide',
     hookTitle: 'THE 40-HOUR EDITING TRAP 🚫',
     startTime: 2530.0,
-    endTime: 2588.4,
-    duration: 58.4,
+    endTime: 2618.6,
+    duration: 88.6,
     aspectRatio: '9:16',
     captionTemplateId: 'iman-gold',
     speakerMode: 'single',
-    autoZoom: {
-      enabled: true,
-      energy: 'subtle',
-      zoomScale: 1.08,
-      speed: 'smooth'
-    },
-    emojiConfig: {
-      enabled: true,
-      density: 'low',
-      animation: 'float',
-      position: 'inline',
-      pack: 'money_crypto'
-    },
-    bRollConfig: {
-      enabled: false,
-      frequency: 'conservative',
-      source: 'cinematic',
-      kenBurnsTransition: true
-    },
+    autoZoom: { enabled: true, energy: 'subtle', zoomScale: 1.08, speed: 'smooth' },
+    emojiConfig: { enabled: true, density: 'low', animation: 'float', position: 'inline', pack: 'money_crypto' },
+    bRollConfig: { enabled: false, frequency: 'conservative', source: 'cinematic', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-    targetPlatform: ['Instagram Reels', 'TikTok', 'LinkedIn'],
+    targetPlatform: ['Instagram Reels', 'TikTok'],
     virality: {
-      overallScore: 88,
-      tier: 'HIGH REACH',
-      hookStrength: 87,
-      pacingScore: 91,
-      emotionalPeak: 86,
-      retentionProbability: 88,
-      rationale: 'Controversial stance that polarizes video editors and creators, generating high comment-section debate and shares.',
+      overallScore: 91,
+      tier: 'VIRAL SUPERNOVA',
+      hookStrength: 90,
+      pacingScore: 92,
+      emotionalPeak: 89,
+      retentionProbability: 91,
+      rationale: 'Controversial stance that polarizes video editors and creators, generating high comment-section debate.',
       keyTopics: ['Video Editing', 'Perfectionism Trap', 'Time Management']
     },
     socialCaptions: {
-      tiktok: 'Stop obsessing over micro-transitions. Focus on hook and distribution instead! 💥 #editorlife #videoeditor #creators',
+      tiktok: 'Stop obsessing over micro-transitions. Focus on hook and distribution instead! 💥 #editorlife',
       instagramReels: 'Is perfectionism killing your channel? Here is what nobody tells you about the algorithm. 📱',
       youtubeShorts: 'The 40-hour editing trap exposed in 5 seconds 💀',
-      linkedin: 'Perfectionism is the enemy of volume. Why iteration velocity outpaces craft in digital distribution.',
-      hashtags: ['#VideoProduction', '#CreatorEconomy', '#Scalability']
+      linkedin: 'Perfectionism is the enemy of volume. Why iteration velocity outpaces craft in digital distribution.'
     },
-    words: SAMPLE_PODCAST_WORDS.slice(4, 21),
+    words: SAMPLE_PODCAST_WORDS,
     bRollTracks: []
   },
   {
@@ -221,52 +165,183 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     title: 'The Math Behind Algorithmic Luck: 30 Chances to Win',
     hookTitle: 'HACKING ALGORITHMIC LUCK 🧮',
     startTime: 4150.0,
-    endTime: 4196.5,
-    duration: 46.5,
+    endTime: 4254.0,
+    duration: 104.0,
     aspectRatio: '9:16',
     captionTemplateId: 'classic-white-box',
     speakerMode: 'single',
-    autoZoom: {
-      enabled: true,
-      energy: 'dynamic',
-      zoomScale: 1.15,
-      speed: 'smooth'
-    },
-    emojiConfig: {
-      enabled: true,
-      density: 'medium',
-      animation: 'pulse',
-      position: 'above',
-      pack: 'viral_fire'
-    },
-    bRollConfig: {
-      enabled: false,
-      frequency: 'balanced',
-      source: 'ai_stock',
-      kenBurnsTransition: true
-    },
+    autoZoom: { enabled: true, energy: 'dynamic', zoomScale: 1.15, speed: 'smooth' },
+    emojiConfig: { enabled: true, density: 'medium', animation: 'pulse', position: 'above', pack: 'viral_fire' },
+    bRollConfig: { enabled: false, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
     targetPlatform: ['YouTube Shorts', 'LinkedIn'],
     virality: {
-      overallScore: 84,
+      overallScore: 89,
       tier: 'HIGH REACH',
-      hookStrength: 82,
-      pacingScore: 86,
-      emotionalPeak: 83,
-      retentionProbability: 85,
-      rationale: 'Intellectual framing appealing to analytical creators and startup founders looking for predictable virality.',
+      hookStrength: 88,
+      pacingScore: 90,
+      emotionalPeak: 87,
+      retentionProbability: 89,
+      rationale: 'Analytical framework appealing to ambitious creators looking for predictable virality.',
       keyTopics: ['Probability', 'Viral Math', 'Algorithm Optimization']
     },
     socialCaptions: {
-      tiktok: 'The math is undeniable. 30 shots on goal beat 1 shot every time 🎯 #math #growth #algorithm',
+      tiktok: 'The math is undeniable. 30 shots on goal beat 1 shot every time 🎯 #math #growth',
       instagramReels: 'How the biggest YouTube channels actually view the algorithm. 🧮',
       youtubeShorts: 'Algorithmic probability explained in 7 seconds 🧠',
-      linkedin: 'Distribution is a probabilistic game. Maximize your surface area of luck by increasing your shots on goal.',
-      hashtags: ['#Probability', '#ContentOperations', '#GrowthMarketing']
+      linkedin: 'Distribution is a probabilistic game. Maximize your surface area of luck.'
     },
-    words: SAMPLE_PODCAST_WORDS.slice(23),
+    words: SAMPLE_PODCAST_WORDS,
+    bRollTracks: []
+  },
+  {
+    id: 'clip-105',
+    projectId: 'proj-1',
+    title: 'The Crucial Turning Point: From Zero to 100K Views',
+    hookTitle: 'THE TURNING POINT 🚀',
+    startTime: 540.0,
+    endTime: 612.5,
+    duration: 72.5,
+    aspectRatio: '9:16',
+    captionTemplateId: 'hormozi-lime',
+    speakerMode: 'single',
+    autoZoom: { enabled: true, energy: 'dynamic', zoomScale: 1.15, speed: 'smooth' },
+    emojiConfig: { enabled: true, density: 'medium', animation: 'bounce', position: 'above', pack: 'viral_fire' },
+    bRollConfig: { enabled: true, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
+    previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
+    youtubeId: 'iq9CN_xwmZo',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    targetPlatform: ['TikTok', 'Instagram Reels'],
+    virality: {
+      overallScore: 93,
+      tier: 'VIRAL SUPERNOVA',
+      hookStrength: 94,
+      pacingScore: 92,
+      emotionalPeak: 93,
+      retentionProbability: 92,
+      rationale: 'High emotion turning point that engages viewers through vulnerable storytelling.',
+      keyTopics: ['Mindset', 'Growth', 'Storytelling']
+    },
+    socialCaptions: {
+      tiktok: 'This was the exact day everything changed. Watch till end! 💥 #growth #mindset',
+      instagramReels: 'The hardest lesson I had to learn the hard way. 👇',
+      youtubeShorts: 'From zero to 100K: The real turning point 🔥',
+      linkedin: 'Lessons learned scaling audience from first principles.'
+    },
+    words: SAMPLE_PODCAST_WORDS,
+    bRollTracks: []
+  },
+  {
+    id: 'clip-106',
+    projectId: 'proj-1',
+    title: 'The Real Execution Blueprint Top Creators Hide',
+    hookTitle: 'THE SECRET BLUEPRINT 💡',
+    startTime: 1820.0,
+    endTime: 1915.8,
+    duration: 95.8,
+    aspectRatio: '9:16',
+    captionTemplateId: 'mrbeast-comic',
+    speakerMode: 'single',
+    autoZoom: { enabled: true, energy: 'dynamic', zoomScale: 1.2, speed: 'punchy' },
+    emojiConfig: { enabled: true, density: 'high', animation: 'pop', position: 'above', pack: 'growth_tech' },
+    bRollConfig: { enabled: true, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
+    previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
+    youtubeId: 'iq9CN_xwmZo',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
+    targetPlatform: ['YouTube Shorts', 'TikTok'],
+    virality: {
+      overallScore: 90,
+      tier: 'HIGH REACH',
+      hookStrength: 91,
+      pacingScore: 89,
+      emotionalPeak: 88,
+      retentionProbability: 91,
+      rationale: 'Direct actionable guidance with minimal fluff, perfect for high bookmark and save ratios.',
+      keyTopics: ['Execution', 'Hacks', 'Scaling']
+    },
+    socialCaptions: {
+      tiktok: 'The exact framework top creators use to dominate short-form video 📈',
+      instagramReels: 'Stop overthinking your content strategy. Use this 3-step blueprint instead.',
+      youtubeShorts: 'The execution rule that separates top 1% from the rest ⚡',
+      linkedin: 'Building predictable distribution flywheels.'
+    },
+    words: SAMPLE_PODCAST_WORDS,
+    bRollTracks: []
+  },
+  {
+    id: 'clip-107',
+    projectId: 'proj-1',
+    title: 'The Psychological Curiosity Gap in Modern Video Algorithms',
+    hookTitle: 'THE CURIOSITY GAP 🧠',
+    startTime: 3240.0,
+    endTime: 3302.0,
+    duration: 62.0,
+    aspectRatio: '9:16',
+    captionTemplateId: 'hormozi-yellow',
+    speakerMode: 'single',
+    autoZoom: { enabled: true, energy: 'subtle', zoomScale: 1.1, speed: 'smooth' },
+    emojiConfig: { enabled: true, density: 'medium', animation: 'bounce', position: 'above', pack: 'viral_fire' },
+    bRollConfig: { enabled: false, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
+    previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
+    youtubeId: 'iq9CN_xwmZo',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    targetPlatform: ['TikTok', 'Instagram Reels'],
+    virality: {
+      overallScore: 88,
+      tier: 'HIGH REACH',
+      hookStrength: 89,
+      pacingScore: 87,
+      emotionalPeak: 86,
+      retentionProbability: 89,
+      rationale: 'Explains the viewer psychology behind high-retention opening hooks.',
+      keyTopics: ['Psychology', 'Retention', 'Curiosity']
+    },
+    socialCaptions: {
+      tiktok: 'Why you cannot stop watching certain videos: The curiosity gap explained 🤯',
+      instagramReels: 'How to hook attention in the first 2 seconds.',
+      youtubeShorts: 'Curiosity gap mastery for viral shorts 🎯',
+      linkedin: 'Cognitive load and retention dynamics in short-form media.'
+    },
+    words: SAMPLE_PODCAST_WORDS,
+    bRollTracks: []
+  },
+  {
+    id: 'clip-108',
+    projectId: 'proj-1',
+    title: 'The Golden Rule of Content Longevity: Build Systems Not Videos',
+    hookTitle: 'BUILD SYSTEMS NOT VIDEOS 🏆',
+    startTime: 4860.0,
+    endTime: 4941.4,
+    duration: 81.4,
+    aspectRatio: '9:16',
+    captionTemplateId: 'iman-gold',
+    speakerMode: 'single',
+    autoZoom: { enabled: true, energy: 'dynamic', zoomScale: 1.15, speed: 'smooth' },
+    emojiConfig: { enabled: true, density: 'medium', animation: 'float', position: 'above', pack: 'viral_fire' },
+    bRollConfig: { enabled: true, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
+    previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
+    youtubeId: 'iq9CN_xwmZo',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+    targetPlatform: ['LinkedIn', 'YouTube Shorts', 'Instagram Reels'],
+    virality: {
+      overallScore: 95,
+      tier: 'VIRAL SUPERNOVA',
+      hookStrength: 96,
+      pacingScore: 93,
+      emotionalPeak: 94,
+      retentionProbability: 95,
+      rationale: 'Comprehensive closing thesis that delivers immediate clarity and high shareability.',
+      keyTopics: ['Systems', 'Longevity', 'Automation']
+    },
+    socialCaptions: {
+      tiktok: 'Amateurs build videos. Professionals build systems. Here is why 🏆 #systems #entrepreneur',
+      instagramReels: 'The golden rule of content longevity explained.',
+      youtubeShorts: 'Build systems, not videos: The #1 takeaway ⚡',
+      linkedin: 'Why operational leverage outlasts individual creative inspiration in digital media.'
+    },
+    words: SAMPLE_PODCAST_WORDS,
     bRollTracks: []
   }
 ];
@@ -274,17 +349,17 @@ export const SAMPLE_CLIPS: ViralClip[] = [
 export const INITIAL_PROJECTS: VideoProject[] = [
   {
     id: 'proj-1',
-    title: 'MUNKAR (2024) Full Movie Indonesia — OpusClip Repurposed Stream',
+    title: 'The $100M Founder Playbook: Building Scaling Systems & AI Leverage',
     sourceType: 'url',
     sourceUrl: 'https://youtu.be/iq9CN_xwmZo?si=2PpfrmaHxNGCbEW9',
     youtubeId: 'iq9CN_xwmZo',
     durationMinutes: 85,
     durationFormatted: '85m 00s',
     thumbnailUrl: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
-    uploadedAt: Date.now() - (3 * 60 * 60 * 1000), // 3 hours ago
+    uploadedAt: Date.now() - (3 * 60 * 60 * 1000),
     status: 'completed',
     progress: 100,
-    clipsCount: 4,
+    clipsCount: 8,
     clips: SAMPLE_CLIPS,
     rawTranscript: SAMPLE_PODCAST_WORDS
   },
@@ -295,11 +370,11 @@ export const INITIAL_PROJECTS: VideoProject[] = [
     durationMinutes: 45,
     durationFormatted: '45m 12s',
     thumbnailUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
-    uploadedAt: Date.now() - (7 * 60 * 60 * 1000), // 7 hours ago
+    uploadedAt: Date.now() - (7 * 60 * 60 * 1000),
     status: 'completed',
     progress: 100,
-    clipsCount: 3,
-    clips: SAMPLE_CLIPS.slice(0, 3),
+    clipsCount: 8,
+    clips: SAMPLE_CLIPS,
     rawTranscript: SAMPLE_PODCAST_WORDS
   }
 ];

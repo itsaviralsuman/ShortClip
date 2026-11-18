@@ -12,7 +12,11 @@ import {
   RotateCcw,
   Film,
   Layers,
-  Clock
+  Clock,
+  Trash2,
+  Download,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 
 interface ViralClipsViewProps {
@@ -28,11 +32,14 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
     activeProject,
     activeFilterPrompt,
     setFilterPrompt,
-    getFilteredClips
+    getFilteredClips,
+    deleteSelectedClips
   } = useVideoProjects();
 
   const [activeChip, setActiveChip] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'score' | 'duration'>('score');
+  const [selectedClipIds, setSelectedClipIds] = useState<Set<string>>(new Set());
+  const [isConfirmingBulkDelete, setIsConfirmingBulkDelete] = useState<boolean>(false);
 
   const filteredClips = getFilteredClips();
 
@@ -47,6 +54,46 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
   const handleChipClick = (chip: string, query: string) => {
     setActiveChip(chip);
     setFilterPrompt(query);
+  };
+
+  const handleToggleSelect = (clipId: string) => {
+    setSelectedClipIds(prev => {
+      const next = new Set(prev);
+      if (next.has(clipId)) {
+        next.delete(clipId);
+      } else {
+        next.add(clipId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedClipIds.size === sortedClips.length) {
+      setSelectedClipIds(new Set());
+    } else {
+      setSelectedClipIds(new Set(sortedClips.map(c => c.id)));
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    deleteSelectedClips(Array.from(selectedClipIds));
+    setSelectedClipIds(new Set());
+    setIsConfirmingBulkDelete(false);
+  };
+
+  const handleBatchDownload = () => {
+    const clipsToDownload = sortedClips.filter(c => selectedClipIds.has(c.id));
+    clipsToDownload.forEach((c, idx) => {
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = c.downloadUrl || `http://localhost:3001/api/clips/${c.id}/download`;
+        link.setAttribute('download', `${c.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.mp4`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, idx * 400);
+    });
   };
 
   if (!activeProject) {
@@ -188,6 +235,79 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
         </div>
       </div>
 
+      {/* Batch Operations & Clip Selection Toolbar */}
+      {sortedClips.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-studio-900/90 border border-slate-800 text-xs">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSelectAll}
+              data-testid="select-all-clips-btn"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-studio-800 hover:bg-studio-700 text-slate-300 hover:text-white transition"
+            >
+              {selectedClipIds.size === sortedClips.length ? (
+                <CheckSquare className="w-3.5 h-3.5 text-brand-purple" />
+              ) : (
+                <Square className="w-3.5 h-3.5 text-slate-400" />
+              )}
+              <span>{selectedClipIds.size === sortedClips.length ? 'Deselect All' : 'Select All'}</span>
+            </button>
+
+            {selectedClipIds.size > 0 && (
+              <span className="font-mono text-purple-300 font-bold px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20">
+                {selectedClipIds.size} of {sortedClips.length} selected
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {selectedClipIds.size > 0 && (
+              <>
+                {isConfirmingBulkDelete ? (
+                  <div className="flex items-center gap-1 bg-red-950/80 border border-red-500/50 p-1 rounded-lg">
+                    <span className="text-[11px] text-red-200 px-1 font-bold">Delete {selectedClipIds.size} clips?</span>
+                    <button
+                      onClick={handleDeleteSelected}
+                      data-testid="confirm-bulk-delete-btn"
+                      className="px-2 py-0.5 rounded bg-red-600 text-white text-[11px] font-bold"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => setIsConfirmingBulkDelete(false)}
+                      className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsConfirmingBulkDelete(true)}
+                    data-testid="bulk-delete-btn"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30 transition active:scale-95"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Selected ({selectedClipIds.size})</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={handleBatchDownload}
+                  data-testid="bulk-download-btn"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-md transition active:scale-95"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Selected ({selectedClipIds.size})</span>
+                </button>
+              </>
+            )}
+
+            <span className="text-slate-400 font-mono text-[11px] hidden sm:inline">
+              Duration strictly 60s–120s • {sortedClips.length} clips ready
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Ranked Clips List */}
       {sortedClips.length === 0 ? (
         <div className="text-center py-16 rounded-2xl glass-panel border border-slate-800 space-y-3">
@@ -213,6 +333,8 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
               key={clip.id}
               clip={clip}
               onOpenStudio={onOpenStudio}
+              isSelected={selectedClipIds.has(clip.id)}
+              onToggleSelect={handleToggleSelect}
             />
           ))}
         </div>

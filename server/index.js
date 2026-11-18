@@ -29,15 +29,51 @@ const outputsDir = path.join(__dirname, 'outputs');
 app.use(cors());
 app.use(express.json());
 
-// Serve rendered MP4 files statically
-app.use('/outputs', express.static(outputsDir, {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.mp4')) {
-      res.setHeader('Content-Type', 'video/mp4');
-      res.setHeader('Accept-Ranges', 'bytes');
-    }
+// Serve rendered MP4 files with HTTP 206 Partial Content Range streaming support
+app.get('/outputs/:filename', (req, res, next) => {
+  const filePath = path.join(outputsDir, req.params.filename);
+  if (!fs.existsSync(filePath)) {
+    return next();
   }
-}));
+
+  if (!req.params.filename.endsWith('.mp4')) {
+    return next();
+  }
+
+  const stat = fs.statSync(filePath);
+  const fileSize = stat.size;
+  const range = req.headers.range;
+
+  if (range) {
+    const parts = range.replace(/bytes=/, '').split('-');
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+    if (start >= fileSize) {
+      res.status(416).send(`Requested range not satisfiable: ${start} >= ${fileSize}`);
+      return;
+    }
+
+    const chunkSize = (end - start) + 1;
+    const file = fs.createReadStream(filePath, { start, end });
+    res.writeHead(206, {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunkSize,
+      'Content-Type': 'video/mp4'
+    });
+    file.pipe(res);
+  } else {
+    res.writeHead(200, {
+      'Content-Length': fileSize,
+      'Content-Type': 'video/mp4',
+      'Accept-Ranges': 'bytes'
+    });
+    fs.createReadStream(filePath).pipe(res);
+  }
+});
+
+app.use('/outputs', express.static(outputsDir));
 
 // Multer storage
 const storage = multer.diskStorage({
@@ -269,7 +305,7 @@ app.post('/api/process', async (req, res) => {
 
       job.status = 'completed';
       job.progress = 100;
-      job.stage = 'All 4 Viral Shorts Rendered & Ready for HD Export!';
+      job.stage = `All ${renderedClips.length} Viral Shorts Rendered & Ready for HD Export!`;
       job.clips = renderedClips;
     } catch (pipelineErr) {
       console.error('Pipeline error:', pipelineErr);
@@ -318,6 +354,41 @@ app.get('/api/clips/:clipId/download', (req, res) => {
       res.status(404).json({ error: 'Rendered MP4 file not found.' });
     }
   }
+});
+
+/**
+ * Delete clip from disk and in-memory store
+ */
+app.delete('/api/clips/:clipId', (req, res) => {
+  const { clipId } = req.params;
+  const mp4Path = path.join(outputsDir, `${clipId}.mp4`);
+  const assPath = path.join(outputsDir, `${clipId}.ass`);
+  const deletedFiles = [];
+
+  if (fs.existsSync(mp4Path)) {
+    try {
+      fs.unlinkSync(mp4Path);
+      deletedFiles.push(mp4Path);
+    } catch (e) {
+      console.warn(`Could not delete ${mp4Path}:`, e.message);
+    }
+  }
+  if (fs.existsSync(assPath)) {
+    try {
+      fs.unlinkSync(assPath);
+      deletedFiles.push(assPath);
+    } catch (e) {
+      console.warn(`Could not delete ${assPath}:`, e.message);
+    }
+  }
+
+  for (const [jobId, job] of jobs.entries()) {
+    if (job.clips && job.clips.length > 0) {
+      job.clips = job.clips.filter(c => c.id !== clipId);
+    }
+  }
+
+  res.json({ success: true, clipId, deletedFiles });
 });
 
 app.listen(PORT, () => {

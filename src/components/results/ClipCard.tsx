@@ -14,20 +14,25 @@ import {
   VolumeX,
   BarChart3,
   Zap,
-  ZoomIn
+  ZoomIn,
+  Trash2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ViralClip } from '../../types';
 import { getTemplateById } from '../../data/captionTemplates';
 import { getOpusCaptionChunk } from '../../utils/captionChunker';
 import { formatTime } from '../../utils/youtubeHelper';
+import { useVideoProjects } from '../../context/VideoProjectContext';
 
 interface ClipCardProps {
   clip: ViralClip;
   onOpenStudio: (clip: ViralClip) => void;
+  isSelected?: boolean;
+  onToggleSelect?: (clipId: string) => void;
 }
 
-export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
+export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelected = false, onToggleSelect }) => {
+  const { deleteClip } = useVideoProjects();
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [isMuted, setIsMuted] = useState<boolean>(false);
@@ -35,6 +40,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
   const [selectedSocialTab, setSelectedSocialTab] = useState<'tiktok' | 'reels' | 'shorts' | 'linkedin'>('tiktok');
   const [copiedCaption, setCopiedCaption] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -320,6 +326,16 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           {/* Top Row: AI Virality Score Badge & Actions */}
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
+              {onToggleSelect && (
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => onToggleSelect(clip.id)}
+                  data-testid={`select-clip-${clip.id}`}
+                  className="w-4 h-4 rounded accent-brand-purple cursor-pointer mr-1"
+                  title="Select for batch action"
+                />
+              )}
               <div
                 className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl bg-gradient-to-r ${viralityColor} border font-bold text-xs shadow-md`}
               >
@@ -462,6 +478,37 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+            {isConfirmingDelete ? (
+              <div className="flex items-center gap-1 bg-red-950/80 border border-red-500/50 p-1 rounded-xl animate-fade-in">
+                <span className="text-[10px] text-red-200 px-1 font-bold">Delete?</span>
+                <button
+                  onClick={() => {
+                    deleteClip(clip.id);
+                    setIsConfirmingDelete(false);
+                  }}
+                  data-testid="confirm-delete-clip-btn"
+                  className="px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold transition active:scale-95"
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => setIsConfirmingDelete(false)}
+                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]"
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsConfirmingDelete(true)}
+                data-testid="clipcard-delete-btn"
+                title="Delete this clip"
+                className="p-2 sm:p-2.5 rounded-xl bg-studio-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/30 transition active:scale-95"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+
             <button
               onClick={() => onOpenStudio(clip)}
               data-testid="clipcard-studio-btn"

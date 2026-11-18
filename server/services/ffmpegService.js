@@ -12,6 +12,10 @@ export class FFmpegService {
    */
   static probeMedia(filePath) {
     return new Promise((resolve, reject) => {
+      if (!fs.existsSync(filePath)) {
+        return reject(new Error(`File not found for probing: ${filePath}`));
+      }
+
       const args = [
         '-v', 'quiet',
         '-print_format', 'json',
@@ -57,6 +61,9 @@ export class FFmpegService {
             fps,
             videoCodec: videoStream ? videoStream.codec_name : 'unknown',
             audioCodec: audioStream ? audioStream.codec_name : 'none',
+            hasAudio: !!audioStream,
+            audioChannels: audioStream ? audioStream.channels : 0,
+            audioSampleRate: audioStream ? parseInt(audioStream.sample_rate || '44100') : 0,
             sizeBytes: parseInt(format.size || '0'),
             bitrate: parseInt(format.bit_rate || '0')
           });
@@ -97,12 +104,14 @@ export class FFmpegService {
   }
 
   /**
-   * Render real Short MP4 with reframing (9:16, 1:1, 16:9, 4:5) & burned captions
+   * Render real Short MP4 with reframing (9:16, 1:1, 16:9, 4:5), burned captions,
+   * atomic file creation (.tmp staging), and normalized AAC audio.
    */
   static renderClip({ inputPath, outputPath, startTime, endTime, aspectRatio = '9:16', subtitlePath }) {
     return new Promise((resolve, reject) => {
       const duration = Math.max(1, endTime - startTime);
       const safeStart = Math.max(0, startTime);
+      const tempOutputPath = `${outputPath}.tmp.mp4`;
 
       let args = ['-y', '-ss', safeStart.toString(), '-t', duration.toString(), '-i', inputPath];
 
@@ -115,7 +124,7 @@ export class FFmpegService {
 
       let filterGraph = '';
       if (aspectRatio === '9:16') {
-        // 1080x1920 Vertical Mobile Short
+        // 1080x1920 Vertical Mobile Short with dual-layer blur padding
         filterGraph = `[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=15:3[bg];[0:v]scale=1080:-2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2${subFilter}[outv]`;
       } else if (aspectRatio === '1:1') {
         // 1080x1080 Square Feed
@@ -137,9 +146,11 @@ export class FFmpegService {
         '-crf', '23',
         '-pix_fmt', 'yuv420p',
         '-c:a', 'aac',
-        '-b:a', '128k',
+        '-b:a', '192k',
+        '-ar', '44100',
+        '-ac', '2',
         '-movflags', '+faststart',
-        outputPath
+        tempOutputPath
       );
 
       const proc = spawn(FFMPEG_BIN, args);
@@ -147,20 +158,53 @@ export class FFmpegService {
       proc.stderr.on('data', d => { stderr += d.toString(); });
 
       proc.on('close', code => {
-        if (code === 0 && fs.existsSync(outputPath)) {
-          resolve({ outputPath, duration });
+        if (code === 0 && fs.existsSync(tempOutputPath)) {
+          try {
+            // Atomic rename from tempOutputPath to final outputPath
+            if (fs.existsSync(outputPath)) {
+              fs.unlinkSync(outputPath);
+            }
+            fs.renameSync(tempOutputPath, outputPath);
+            resolve({ outputPath, duration });
+          } catch (renameErr) {
+            // If rename failed (e.g. file lock on Windows), copy and unlink
+            fs.copyFileSync(tempOutputPath, outputPath);
+            fs.unlinkSync(tempOutputPath);
+            resolve({ outputPath, duration });
+          }
         } else {
-          // If subtitle filter failed (e.g. font missing), retry without subtitle filter
+          // If subtitle filter failed (e.g. font missing or filter graph error), retry without subtitle filter
           if (subFilter) {
             console.warn('Retrying render without subtitle filter...');
             this.renderClip({ inputPath, outputPath, startTime, endTime, aspectRatio, subtitlePath: null })
               .then(resolve)
               .catch(reject);
           } else {
+            if (fs.existsSync(tempOutputPath)) {
+              try { fs.unlinkSync(tempOutputPath); } catch (_) {}
+            }
             reject(new Error(`FFmpeg render failed with code ${code}: ${stderr}`));
           }
         }
       });
     });
+  }
+
+  /**
+   * Validate that rendered MP4 satisfies browser playback, duration and audio requirements
+   */
+  static async validateClip(filePath, minDuration = 60.0, maxDuration = 120.0) {
+    const probe = await this.probeMedia(filePath);
+    const validDuration = probe.duration >= minDuration - 2.0 && probe.duration <= maxDuration + 2.0;
+    const validVideo = probe.videoCodec === 'h264';
+    const validAudio = probe.audioCodec === 'aac' || probe.audioCodec === 'mp3';
+
+    return {
+      isValid: validDuration && validVideo && probe.sizeBytes > 10000,
+      probe,
+      validDuration,
+      validVideo,
+      validAudio
+    };
   }
 }

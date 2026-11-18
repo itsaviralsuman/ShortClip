@@ -16,7 +16,21 @@ import { SecurityInboxModal } from './components/auth/SecurityInboxModal';
 import { ViralClip } from './types';
 
 const MainApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('landing');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    try {
+      const saved = localStorage.getItem('clipfusion_active_tab');
+      if (saved && ['landing', 'dashboard', 'clips', 'analytics'].includes(saved)) {
+        return saved as ActiveTab;
+      }
+    } catch (e) {}
+    return 'landing';
+  });
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('clipfusion_active_tab', activeTab);
+    } catch (e) {}
+  }, [activeTab]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
   const [initialUrlForModal, setInitialUrlForModal] = useState<string>('');
 
@@ -69,7 +83,7 @@ const MainApp: React.FC = () => {
           setInitialUrlForModal('');
           setIsUploadModalOpen(true);
         }}
-        clipsCount={activeProject?.clipsCount || 4}
+        clipsCount={activeProject?.clipsCount ?? 8}
       />
 
       {/* 3. Main Body Content Based on Active Tab */}
