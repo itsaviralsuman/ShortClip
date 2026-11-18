@@ -3,7 +3,6 @@ import { QuotaProvider } from './context/QuotaContext';
 import { VideoProjectProvider, useVideoProjects } from './context/VideoProjectContext';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar, ActiveTab } from './components/common/Navbar';
-import { DevToolbar } from './components/common/DevToolbar';
 import { LandingPage } from './components/landing/LandingPage';
 import { DashboardPage } from './components/dashboard/DashboardPage';
 import { ViralClipsView } from './components/results/ViralClipsView';
@@ -54,10 +53,7 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-studio-950 text-slate-100 selection:bg-brand-purple/30 selection:text-purple-200">
-      {/* 1. Sticky Developer Quota Testing Bar (Collapsible on mobile) */}
-      <DevToolbar />
-
-      {/* 2. Top Navigation Bar with Mobile Drawer, User Profile / Sign In & Quota Gauge */}
+      {/* Top Navigation Bar with Mobile Drawer, User Profile / Sign In & Quota Gauge */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}

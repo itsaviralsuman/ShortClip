@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuota } from '../../context/QuotaContext';
 import { QuotaGauge } from '../common/QuotaGauge';
 import {
@@ -9,7 +9,10 @@ import {
   AlertTriangle,
   RotateCcw,
   Zap,
-  Info
+  Info,
+  Play,
+  FastForward,
+  Wrench
 } from 'lucide-react';
 import { ROLLING_WINDOW_MS } from '../../utils/quotaEngine';
 
@@ -24,8 +27,53 @@ export const QuotaAnalyticsPage: React.FC = () => {
     countdownFormatted,
     effectiveNow,
     clearUploadHistory,
-    resetAllQuota
+    resetAllQuota,
+    simulateQuickUpload,
+    fastForwardTime,
+    simulatedTimeOffsetMs
   } = useQuota();
+
+  const [toastMsg, setToastMsg] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const notify = (message: string, type: 'success' | 'error') => {
+    setToastMsg({ message, type });
+    setTimeout(() => setToastMsg(null), 3500);
+  };
+
+  const handleSimulate1Hr = () => {
+    const res = simulateQuickUpload(60, 'Demo 1-Hour Stream (60m)');
+    if (res.allowed) {
+      notify('Simulated 1-Hour Upload (60m) added successfully!', 'success');
+    } else {
+      notify(res.message, 'error');
+    }
+  };
+
+  const handleSimulate4Hr = () => {
+    const res = simulateQuickUpload(240, 'Max 4-Hour Raw Stream (240m)');
+    if (res.allowed) {
+      notify('Simulated 4-Hour Upload (240m) added successfully!', 'success');
+    } else {
+      notify(res.message, 'error');
+    }
+  };
+
+  const handleFastForward12h = () => {
+    fastForwardTime(12);
+    notify('Fast-forwarded clock by +12 Hours! Rolling window updated.', 'success');
+  };
+
+  const handleFastForward24h = () => {
+    fastForwardTime(24);
+    notify('Fast-forwarded clock by +24 Hours! 24h rolling slots restored.', 'success');
+  };
+
+  const handleReset = () => {
+    resetAllQuota();
+    notify('Quota reset to full 480 minutes capacity!', 'success');
+  };
+
+  const simulatedHours = Math.round(simulatedTimeOffsetMs / (1000 * 60 * 60));
 
   return (
     <div className="space-y-8 py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -152,6 +200,100 @@ export const QuotaAnalyticsPage: React.FC = () => {
             </table>
           </div>
         )}
+        {toastMsg && (
+          <div
+            className={`p-3 rounded-xl border text-xs font-mono flex items-center gap-2 ${
+              toastMsg.type === 'success'
+                ? 'bg-emerald-950/80 border-emerald-500/40 text-emerald-300'
+                : 'bg-red-950/80 border-red-500/40 text-red-300'
+            }`}
+          >
+            {toastMsg.type === 'success' ? (
+              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+            )}
+            <span>{toastMsg.message}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Developer Quota Simulation & Time Travel Sandbox */}
+      <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              <Wrench className="w-4 h-4 text-brand-purple" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <span>Interactive Quota Simulation & Time Travel Sandbox</span>
+                {simulatedHours > 0 && (
+                  <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30">
+                    +{simulatedHours}h Time Travel Active
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-slate-400">
+                Simulate 1-hour or 4-hour video uploads and fast-forward clock to verify the 24-hour expiration mechanics.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-studio-800 hover:bg-studio-700 text-slate-300 hover:text-white border border-slate-700 text-xs transition"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-purple-400" />
+            <span>Reset Clock & Quota</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+          <button
+            onClick={handleSimulate1Hr}
+            className="flex items-center justify-center gap-2 p-3 rounded-xl bg-studio-900/80 hover:bg-purple-900/30 border border-slate-800 hover:border-purple-500/40 text-slate-200 hover:text-white transition group"
+          >
+            <Play className="w-4 h-4 text-brand-cyan group-hover:scale-110 transition-transform" />
+            <div className="text-left">
+              <div className="text-xs font-bold">+1-Hr Upload</div>
+              <div className="text-[10px] text-slate-400 font-mono">Consumes 60m</div>
+            </div>
+          </button>
+
+          <button
+            onClick={handleSimulate4Hr}
+            className="flex items-center justify-center gap-2 p-3 rounded-xl bg-studio-900/80 hover:bg-purple-900/30 border border-slate-800 hover:border-purple-500/40 text-slate-200 hover:text-white transition group"
+          >
+            <Play className="w-4 h-4 text-brand-purple group-hover:scale-110 transition-transform" />
+            <div className="text-left">
+              <div className="text-xs font-bold">+4-Hr Upload</div>
+              <div className="text-[10px] text-slate-400 font-mono">Consumes 240m</div>
+            </div>
+          </button>
+
+          <button
+            onClick={handleFastForward12h}
+            className="flex items-center justify-center gap-2 p-3 rounded-xl bg-studio-900/80 hover:bg-amber-900/20 border border-slate-800 hover:border-amber-500/40 text-slate-200 hover:text-white transition group"
+          >
+            <FastForward className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+            <div className="text-left">
+              <div className="text-xs font-bold">+12 Hours</div>
+              <div className="text-[10px] text-slate-400 font-mono">Fast-forward clock</div>
+            </div>
+          </button>
+
+          <button
+            onClick={handleFastForward24h}
+            className="flex items-center justify-center gap-2 p-3 rounded-xl bg-studio-900/80 hover:bg-emerald-900/20 border border-slate-800 hover:border-emerald-500/40 text-slate-200 hover:text-white transition group"
+          >
+            <FastForward className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <div className="text-left">
+              <div className="text-xs font-bold">+24 Hours</div>
+              <div className="text-[10px] text-slate-400 font-mono">Full cycle reset</div>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   );

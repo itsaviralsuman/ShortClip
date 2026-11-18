@@ -4,6 +4,20 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.0.6] - 2026-11-18
+
+### Toolbar Removal & Vercel Injection Suppression
+- **Removal of Sticky Dev Toolbar from Global UI (`src/App.tsx`)**:
+  - Removed `<DevToolbar />` from the top of the app so no testing bar or "Dev Toolbar" badge pops up across pages on phones or laptops.
+- **Relocation of Simulation Controls (`src/components/analytics/QuotaAnalyticsPage.tsx`)**:
+  - Integrated the quota simulation tools (`+1h`, `+4h`, `+12h Fast-Forward`, `+24h Fast-Forward`, and `Reset Quota`) directly inside the dedicated "Quota Engine" tab within an Interactive Sandbox panel.
+- **Vercel Toolbar & Feedback Injections Suppression (`src/index.css`)**:
+  - Added aggressive CSS suppression rules targeting `#vercel-toolbar`, `[data-vercel-toolbar]`, `#vercel-live-feedback`, `.vercel-toolbar`, and `vercel.live` iframes so third-party toolbars never intrude on the user experience.
+- **Vercel Deployment Configuration (`vercel.json`)**:
+  - Added SPA rewrite configuration for single-page routing on Vercel deployments.
+
+---
+
 ## [1.0.5] - 2026-11-18
 
 ### Dynamic Multi-Device Email Sign In & Unauthenticated Default State
