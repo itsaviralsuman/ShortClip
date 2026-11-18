@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { QuotaProvider } from './context/QuotaContext';
 import { VideoProjectProvider, useVideoProjects } from './context/VideoProjectContext';
+import { AuthProvider } from './context/AuthContext';
 import { Navbar, ActiveTab } from './components/common/Navbar';
 import { DevToolbar } from './components/common/DevToolbar';
 import { LandingPage } from './components/landing/LandingPage';
@@ -9,6 +10,7 @@ import { ViralClipsView } from './components/results/ViralClipsView';
 import { QuotaAnalyticsPage } from './components/analytics/QuotaAnalyticsPage';
 import { UploadModal } from './components/dashboard/UploadModal';
 import { StudioEditorModal } from './components/editor/StudioEditorModal';
+import { AuthModal } from './components/auth/AuthModal';
 import { ViralClip } from './types';
 
 const MainApp: React.FC = () => {
@@ -55,7 +57,7 @@ const MainApp: React.FC = () => {
       {/* 1. Sticky Developer Quota Testing Bar (Collapsible on mobile) */}
       <DevToolbar />
 
-      {/* 2. Top Navigation Bar with Mobile Drawer & Live Quota Mini-Gauge */}
+      {/* 2. Top Navigation Bar with Mobile Drawer, User Profile / Sign In & Quota Gauge */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -66,7 +68,7 @@ const MainApp: React.FC = () => {
         clipsCount={activeProject?.clipsCount || 4}
       />
 
-      {/* 3. Main Body Content Based on Active Tab (with mobile bottom padding for quick-nav bar) */}
+      {/* 3. Main Body Content Based on Active Tab */}
       <main className="flex-1 pb-16 md:pb-0">
         {activeTab === 'landing' && (
           <LandingPage
@@ -105,24 +107,29 @@ const MainApp: React.FC = () => {
         />
       )}
 
-      {/* 5. Fullscreen Vizard Studio Modal (Multi-Track & Transcript Editor with Mobile Tab Switcher) */}
+      {/* 5. Fullscreen Vizard Studio Modal (Multi-Track, 35 Styles, Auto-Zoom, AI Emojis & Auto B-Roll) */}
       {isEditorOpen && selectedClip && (
         <StudioEditorModal
           clip={selectedClip}
           onClose={closeEditor}
         />
       )}
+
+      {/* 6. Sign In / Sign Up Modal */}
+      <AuthModal />
     </div>
   );
 };
 
 export const App: React.FC = () => {
   return (
-    <QuotaProvider>
-      <VideoProjectProvider>
-        <MainApp />
-      </VideoProjectProvider>
-    </QuotaProvider>
+    <AuthProvider>
+      <QuotaProvider>
+        <VideoProjectProvider>
+          <MainApp />
+        </VideoProjectProvider>
+      </QuotaProvider>
+    </AuthProvider>
   );
 };
 

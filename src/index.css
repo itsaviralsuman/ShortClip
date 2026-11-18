@@ -165,7 +165,84 @@
   transform: translateY(0);
 }
 
-/* Viral Caption Templates */
+/* --- 35 OPUS CLIP ANIMATION KEYFRAMES --- */
+@keyframes wordPop {
+  0% { transform: scale(0.95); }
+  50% { transform: scale(1.18); }
+  100% { transform: scale(1.08); }
+}
+
+@keyframes comicBounce {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-4px) rotate(1.5deg) scale(1.12); }
+}
+
+@keyframes neonPulse {
+  0%, 100% { filter: drop-shadow(0 0 8px currentColor); }
+  50% { filter: drop-shadow(0 0 18px currentColor); }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes punchZoom {
+  0% { transform: scale(0.9); }
+  60% { transform: scale(1.22); }
+  100% { transform: scale(1.1); }
+}
+
+@keyframes karaokeBounce {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-6px) scale(1.1); }
+  100% { transform: translateY(0) scale(1.05); }
+}
+
+@keyframes underlineReveal {
+  from { text-decoration-color: transparent; }
+  to { text-decoration-color: #F59E0B; }
+}
+
+.animate-word-pop {
+  animation: wordPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-comic-bounce {
+  animation: comicBounce 0.4s ease-in-out infinite;
+}
+
+.animate-neon-pulse {
+  animation: neonPulse 1.5s ease-in-out infinite;
+}
+
+.animate-glitch {
+  animation: glitch 0.3s ease-in-out infinite;
+}
+
+.animate-punch-zoom {
+  animation: punchZoom 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-karaoke-bounce {
+  animation: karaokeBounce 0.35s ease-in-out forwards;
+}
+
+.animate-underline-reveal {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  animation: underlineReveal 0.3s ease forwards;
+}
+
+.animate-smooth-fade {
+  animation: fadeIn 0.2s ease forwards;
+}
+
+/* Classic Hormozi / Beast base classes */
 .caption-hormozi {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;

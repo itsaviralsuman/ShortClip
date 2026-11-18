@@ -4,9 +4,11 @@ import {
   ViralClip,
   TranscriptWord,
   AspectRatio,
-  CaptionPreset,
   SpeakerMode,
-  AIProcessingConfig
+  AIProcessingConfig,
+  AutoZoomConfig,
+  EmojiConfig,
+  AutoBRollConfig
 } from '../types';
 import { INITIAL_PROJECTS, SAMPLE_CLIPS, SAMPLE_PODCAST_WORDS } from '../data/sampleProjects';
 import { filterClipsByPrompt } from '../utils/viralityScorer';
@@ -36,10 +38,13 @@ interface VideoProjectContextType {
   toggleWordDeleted: (clipId: string, wordId: string) => void;
   removeFillerWordsFromClip: (clipId: string) => void;
   removeSilencesFromClip: (clipId: string) => void;
-  updateClipCaptionPreset: (clipId: string, preset: CaptionPreset) => void;
+  updateClipCaptionTemplate: (clipId: string, templateId: string) => void;
   updateClipAspectRatio: (clipId: string, ratio: AspectRatio) => void;
   updateClipSpeakerMode: (clipId: string, mode: SpeakerMode) => void;
   updateClipHookTitle: (clipId: string, newHook: string) => void;
+  updateClipAutoZoom: (clipId: string, zoom: Partial<AutoZoomConfig>) => void;
+  updateClipEmojiConfig: (clipId: string, emojis: Partial<EmojiConfig>) => void;
+  updateClipBRollConfig: (clipId: string, broll: Partial<AutoBRollConfig>) => void;
   getFilteredClips: () => ViralClip[];
 }
 
@@ -84,13 +89,12 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setProcessingProgress(5);
     setProcessingStageText('Ingesting Media & Initializing Neural Pipeline...');
 
-    // Simulate multi-stage AI extraction
     const stages = [
       { progress: 25, text: 'Stage 1/5: Extracting Audio & Enhancing Dialogue with AI Denoising...' },
       { progress: 50, text: 'Stage 2/5: Whisper AI Large-v3 Generating Word-Level Timestamps...' },
       { progress: 72, text: 'Stage 3/5: Computer Vision Face Tracking & Multi-Speaker Detection...' },
       { progress: 88, text: 'Stage 4/5: Opus Virality Score™ Ranking Hooks & Retention Curves...' },
-      { progress: 98, text: 'Stage 5/5: Auto-Generating Hormozi Captions, B-Roll & Social Meta...' },
+      { progress: 98, text: 'Stage 5/5: Auto-Generating 35+ Style Captions, AI Emojis & B-Roll...' },
     ];
 
     for (const stage of stages) {
@@ -104,8 +108,11 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
       ...clip,
       id: `clip-${newProjectId}-${idx + 1}`,
       projectId: newProjectId,
-      captionPreset: config?.captionPreset || 'hormozi',
+      captionTemplateId: config?.captionTemplateId || 'hormozi-yellow',
       aspectRatio: config?.aspectRatio || '9:16',
+      autoZoom: config?.autoZoom || clip.autoZoom,
+      emojiConfig: config?.emojiConfig || clip.emojiConfig,
+      bRollConfig: config?.autoBRoll || clip.bRollConfig
     }));
 
     const newProject: VideoProject = {
@@ -135,15 +142,10 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const updateClipWords = (clipId: string, updatedWords: TranscriptWord[]) => {
     setProjects(prevProjects =>
-      prevProjects.map(proj => {
-        const updatedClips = proj.clips.map(clip => {
-          if (clip.id === clipId) {
-            return { ...clip, words: updatedWords };
-          }
-          return clip;
-        });
-        return { ...proj, clips: updatedClips };
-      })
+      prevProjects.map(proj => ({
+        ...proj,
+        clips: proj.clips.map(clip => (clip.id === clipId ? { ...clip, words: updatedWords } : clip))
+      }))
     );
 
     if (selectedClip && selectedClip.id === clipId) {
@@ -169,7 +171,6 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const removeSilencesFromClip = (clipId: string) => {
     if (!selectedClip || selectedClip.id !== clipId) return;
-    // Compress gaps greater than 0.8s between words
     let accumulatedCut = 0;
     const newWords = selectedClip.words.map((w, index) => {
       if (index > 0) {
@@ -188,15 +189,15 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
     updateClipWords(clipId, newWords);
   };
 
-  const updateClipCaptionPreset = (clipId: string, preset: CaptionPreset) => {
+  const updateClipCaptionTemplate = (clipId: string, templateId: string) => {
     setProjects(prevProjects =>
       prevProjects.map(proj => ({
         ...proj,
-        clips: proj.clips.map(clip => (clip.id === clipId ? { ...clip, captionPreset: preset } : clip))
+        clips: proj.clips.map(clip => (clip.id === clipId ? { ...clip, captionTemplateId: templateId } : clip))
       }))
     );
     if (selectedClip && selectedClip.id === clipId) {
-      setSelectedClip(prev => (prev ? { ...prev, captionPreset: preset } : null));
+      setSelectedClip(prev => (prev ? { ...prev, captionTemplateId: templateId } : null));
     }
   };
 
@@ -236,6 +237,54 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  const updateClipAutoZoom = (clipId: string, zoom: Partial<AutoZoomConfig>) => {
+    setProjects(prevProjects =>
+      prevProjects.map(proj => ({
+        ...proj,
+        clips: proj.clips.map(clip =>
+          clip.id === clipId ? { ...clip, autoZoom: { ...clip.autoZoom, ...zoom } } : clip
+        )
+      }))
+    );
+    if (selectedClip && selectedClip.id === clipId) {
+      setSelectedClip(prev =>
+        prev ? { ...prev, autoZoom: { ...prev.autoZoom, ...zoom } } : null
+      );
+    }
+  };
+
+  const updateClipEmojiConfig = (clipId: string, emojis: Partial<EmojiConfig>) => {
+    setProjects(prevProjects =>
+      prevProjects.map(proj => ({
+        ...proj,
+        clips: proj.clips.map(clip =>
+          clip.id === clipId ? { ...clip, emojiConfig: { ...clip.emojiConfig, ...emojis } } : clip
+        )
+      }))
+    );
+    if (selectedClip && selectedClip.id === clipId) {
+      setSelectedClip(prev =>
+        prev ? { ...prev, emojiConfig: { ...prev.emojiConfig, ...emojis } } : null
+      );
+    }
+  };
+
+  const updateClipBRollConfig = (clipId: string, broll: Partial<AutoBRollConfig>) => {
+    setProjects(prevProjects =>
+      prevProjects.map(proj => ({
+        ...proj,
+        clips: proj.clips.map(clip =>
+          clip.id === clipId ? { ...clip, bRollConfig: { ...clip.bRollConfig, ...broll } } : clip
+        )
+      }))
+    );
+    if (selectedClip && selectedClip.id === clipId) {
+      setSelectedClip(prev =>
+        prev ? { ...prev, bRollConfig: { ...prev.bRollConfig, ...broll } } : null
+      );
+    }
+  };
+
   return (
     <VideoProjectContext.Provider
       value={{
@@ -257,10 +306,13 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         toggleWordDeleted,
         removeFillerWordsFromClip,
         removeSilencesFromClip,
-        updateClipCaptionPreset,
+        updateClipCaptionTemplate,
         updateClipAspectRatio,
         updateClipSpeakerMode,
         updateClipHookTitle,
+        updateClipAutoZoom,
+        updateClipEmojiConfig,
+        updateClipBRollConfig,
         getFilteredClips
       }}
     >

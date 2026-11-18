@@ -29,10 +29,10 @@ export const BeforeAfterSlider: React.FC = () => {
           60FPS Interactive Visual Engine
         </span>
         <h3 className="text-lg sm:text-xl font-display font-extrabold text-white mt-1">
-          Raw 4-Hour Stream <span className="text-slate-500">→</span> 15 Viral Shorts in 1 Click
+          Long-Form Video Stream <span className="text-slate-500">→</span> 15 Viral Shorts in 1 Click
         </h3>
         <p className="text-[11px] sm:text-xs text-slate-400 max-w-md mx-auto">
-          Drag horizontally on mobile or laptop to compare raw footage with AI-repurposed short
+          Drag horizontally on mobile or laptop to compare original footage with AI-repurposed vertical short
         </p>
       </div>
 
@@ -82,7 +82,7 @@ export const BeforeAfterSlider: React.FC = () => {
           </div>
         </div>
 
-        {/* BEFORE (Raw 4-Hour Stream, clipped to slider position) */}
+        {/* BEFORE (Original Uncut Stream, clipped to slider position) */}
         <div
           style={{ width: `${sliderPosition}%` }}
           className="absolute inset-y-0 left-0 overflow-hidden border-r-2 border-brand-purple bg-studio-900"
@@ -90,7 +90,7 @@ export const BeforeAfterSlider: React.FC = () => {
           <div className="relative w-[1000px] h-full flex items-center justify-center bg-slate-900/90">
             <img
               src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1200&auto=format&fit=crop&q=80"
-              alt="Raw 4-Hour Stream"
+              alt="Original Video Stream"
               className="w-full h-full object-cover filter grayscale contrast-75 brightness-50"
             />
             <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center p-4">
@@ -98,10 +98,10 @@ export const BeforeAfterSlider: React.FC = () => {
                 <Video className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
               <span className="font-mono text-xs sm:text-sm text-slate-300 font-bold">
-                Raw 4-Hour Stream (240m)
+                Original Uncut Stream (Wide 16:9)
               </span>
               <span className="text-[10px] sm:text-xs text-slate-400 max-w-xs mt-0.5 hidden xs:block">
-                Horizontal 16:9, wide angle, unedited pauses, zero captions.
+                Horizontal wide angle, unedited pauses, filler words, zero captions.
               </span>
             </div>
           </div>
@@ -109,7 +109,7 @@ export const BeforeAfterSlider: React.FC = () => {
           {/* Before Tag */}
           <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-slate-900/90 backdrop-blur-md text-slate-300 text-[10px] sm:text-xs font-bold border border-slate-700 flex items-center gap-1">
             <Video className="w-3 h-3 text-slate-400" />
-            <span>Raw Stream</span>
+            <span>Original Stream</span>
           </div>
         </div>
 

@@ -13,10 +13,12 @@ import {
   Volume2,
   VolumeX,
   BarChart3,
-  Zap
+  Zap,
+  ZoomIn
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ViralClip } from '../../types';
+import { getTemplateById } from '../../data/captionTemplates';
 
 interface ClipCardProps {
   clip: ViralClip;
@@ -33,6 +35,9 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Dynamic template details from the 35 OpusClip styles
+  const tpl = getTemplateById(clip.captionTemplateId);
 
   // Time tracking for dynamic caption synchronization
   useEffect(() => {
@@ -69,7 +74,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
         spread: 60,
         origin: { y: 0.7 }
       });
-      alert(`Export Complete! "${clip.title}" rendered at 1080x1920 (60fps) with dynamic ${clip.captionPreset.toUpperCase()} captions.`);
+      alert(`Export Complete! "${clip.title}" rendered at 1080x1920 (60fps) with ${tpl.name} captions, dynamic Auto-Zoom & AI Emojis.`);
     }, 1500);
   };
 
@@ -84,21 +89,17 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
     (w) => !w.isDeleted && currentTime >= w.start && currentTime <= w.end
   );
 
+  const shouldZoomPunch =
+    clip.autoZoom?.enabled &&
+    activeWord &&
+    (!!activeWord.highlightColor || !!activeWord.emoji || activeWord.text.length > 5);
+
   const viralityColor =
     clip.virality.overallScore >= 90
       ? 'from-purple-500 to-pink-500 text-purple-300 border-purple-500/40'
       : clip.virality.overallScore >= 80
       ? 'from-emerald-500 to-teal-500 text-emerald-300 border-emerald-500/40'
       : 'from-cyan-500 to-blue-500 text-cyan-300 border-cyan-500/40';
-
-  const captionStyleClass =
-    clip.captionPreset === 'hormozi'
-      ? 'caption-hormozi text-lg sm:text-xl text-yellow-300'
-      : clip.captionPreset === 'mrbeast'
-      ? 'caption-mrbeast text-lg sm:text-xl text-cyan-300'
-      : clip.captionPreset === 'iman'
-      ? 'caption-iman text-base sm:text-lg text-amber-100 italic'
-      : 'caption-minimalist text-xs sm:text-sm text-white';
 
   const socialCaptionText =
     selectedSocialTab === 'tiktok'
@@ -111,25 +112,30 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
 
   return (
     <div className="glass-panel-elevated rounded-2xl border border-slate-800 hover:border-purple-500/30 transition-all duration-300 overflow-hidden flex flex-col lg:flex-row">
-      {/* LEFT: 9:16 Vertical Video Preview Stage */}
+      {/* LEFT: 9:16 Vertical Video Preview Stage with Auto-Zoom */}
       <div className="relative w-full lg:w-72 aspect-[9/16] max-h-[440px] sm:max-h-[500px] lg:max-h-none bg-black shrink-0 overflow-hidden group flex items-center justify-center">
-        {clip.videoUrl ? (
-          <video
-            ref={videoRef}
-            src={clip.videoUrl}
-            poster={clip.previewThumbnail}
-            muted={isMuted}
-            loop
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <img
-            src={clip.previewThumbnail}
-            alt={clip.title}
-            className="w-full h-full object-cover filter brightness-75"
-          />
-        )}
+        <div
+          style={{ transform: shouldZoomPunch ? `scale(${clip.autoZoom.zoomScale})` : 'scale(1)' }}
+          className="w-full h-full transition-transform duration-300 ease-out origin-center"
+        >
+          {clip.videoUrl ? (
+            <video
+              ref={videoRef}
+              src={clip.videoUrl}
+              poster={clip.previewThumbnail}
+              muted={isMuted}
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              src={clip.previewThumbnail}
+              alt={clip.title}
+              className="w-full h-full object-cover filter brightness-75"
+            />
+          )}
+        </div>
 
         {/* Top On-Screen Viral Hook Banner */}
         <div className="absolute top-3 sm:top-4 inset-x-3 z-20 pointer-events-none">
@@ -138,22 +144,53 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           </div>
         </div>
 
-        {/* Dynamic Animated Captions Overlay */}
+        {/* Dynamic Animated Captions with 35 presets styling */}
         <div className="absolute inset-x-3 bottom-12 sm:bottom-14 z-20 pointer-events-none text-center">
           {activeWord ? (
-            <div className={`${captionStyleClass} transition-transform transform scale-105 duration-100`}>
-              {activeWord.text} {activeWord.emoji}
+            <div className="inline-flex flex-col items-center">
+              {clip.emojiConfig?.enabled && clip.emojiConfig.position === 'above' && activeWord.emoji && (
+                <span className="text-xl animate-bounce mb-0.5">{activeWord.emoji}</span>
+              )}
+              <div
+                style={{
+                  fontFamily: tpl.fontFamily,
+                  color: tpl.activeWordColor,
+                  textShadow: tpl.textShadow,
+                  backgroundColor: tpl.backgroundColor || 'transparent'
+                }}
+                className={`text-lg sm:text-xl font-black ${tpl.textTransform} px-2 py-0.5 rounded-md transform scale-105 transition-transform duration-100`}
+              >
+                {activeWord.text}
+                {clip.emojiConfig?.enabled && clip.emojiConfig.position === 'inline' && activeWord.emoji && (
+                  <span className="ml-1 text-sm">{activeWord.emoji}</span>
+                )}
+              </div>
             </div>
           ) : (
-            <div className={`${captionStyleClass} opacity-80`}>
+            <div
+              style={{
+                fontFamily: tpl.fontFamily,
+                color: tpl.textColor,
+                textShadow: tpl.textShadow
+              }}
+              className={`text-sm sm:text-base font-bold opacity-80 ${tpl.textTransform}`}
+            >
               {clip.words.slice(0, 3).map((w) => w.text).join(' ')}
             </div>
           )}
         </div>
 
-        {/* Speaker Mode Indicator */}
-        <div className="absolute top-11 sm:top-14 left-3 z-20 px-1.5 sm:px-2 py-0.5 rounded bg-black/70 backdrop-blur-md text-[9px] sm:text-[10px] text-purple-300 font-mono border border-purple-500/20">
-          {clip.speakerMode === 'split-top-bottom' ? 'Split-Screen' : 'Auto-Track'}
+        {/* Speaker Mode & Zoom Indicator */}
+        <div className="absolute top-11 sm:top-14 left-3 z-20 flex items-center gap-1.5">
+          <span className="px-1.5 sm:px-2 py-0.5 rounded bg-black/70 backdrop-blur-md text-[9px] sm:text-[10px] text-purple-300 font-mono border border-purple-500/20">
+            {clip.speakerMode === 'split-top-bottom' ? 'Split-Screen' : 'Auto-Track'}
+          </span>
+          {clip.autoZoom?.enabled && (
+            <span className="px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-md text-[9px] sm:text-[10px] text-cyan-300 font-mono border border-cyan-500/20 flex items-center gap-1">
+              <ZoomIn className="w-2.5 h-2.5" />
+              <span>Zoom</span>
+            </span>
+          )}
         </div>
 
         {/* Play/Pause Button Overlay */}
@@ -174,7 +211,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           <span>
             {currentTime.toFixed(1)}s / {clip.duration.toFixed(1)}s
           </span>
-          <span className="text-purple-300 font-bold uppercase">{clip.captionPreset}</span>
+          <span className="text-purple-300 font-bold truncate max-w-[90px]">{tpl.name.split(' ')[0]}</span>
         </div>
       </div>
 
@@ -202,6 +239,10 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
                 <span>Radar</span>
                 {showRadar ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               </button>
+
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-studio-900 text-slate-300 border border-slate-700 hidden sm:inline">
+                Style: {tpl.name.split(' ')[0]}
+              </span>
             </div>
 
             <div className="flex items-center gap-1.5 text-[11px] sm:text-xs">

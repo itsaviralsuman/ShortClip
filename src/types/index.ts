@@ -1,8 +1,56 @@
 export type AspectRatio = '9:16' | '1:1' | '16:9' | '4:5';
 
-export type CaptionPreset = 'hormozi' | 'mrbeast' | 'iman' | 'minimalist';
-
 export type SpeakerMode = 'single' | 'split-top-bottom' | 'grid' | 'pip';
+
+export interface CaptionTemplate {
+  id: string;
+  name: string;
+  category: 'Creator Styles' | 'Kinetic & Animated' | 'Minimalist Subtitles' | 'Broadcast & Social';
+  creatorTag?: string;
+  fontFamily: string;
+  fontSize: string;
+  textColor: string;
+  activeWordColor: string;
+  backgroundColor?: string;
+  textShadow: string;
+  animationClass: string;
+  textTransform: 'uppercase' | 'lowercase' | 'capitalize' | 'none';
+  sampleText: string;
+  emojiPack: string;
+  badge: string;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  plan: 'Creator Free' | 'Creator Pro' | 'Agency Enterprise';
+  signedIn: boolean;
+  memberSince: string;
+}
+
+export interface AutoZoomConfig {
+  enabled: boolean;
+  energy: 'subtle' | 'dynamic' | 'high_energy';
+  zoomScale: number; // 1.08, 1.15, 1.25
+  speed: 'smooth' | 'punchy';
+}
+
+export interface EmojiConfig {
+  enabled: boolean;
+  density: 'low' | 'medium' | 'high'; // low (key words), medium, high (almost every phrase)
+  animation: 'bounce' | 'pop' | 'pulse' | 'float';
+  position: 'above' | 'inline';
+  pack: 'viral_fire' | 'money_crypto' | 'growth_tech' | 'comedy_memes';
+}
+
+export interface AutoBRollConfig {
+  enabled: boolean;
+  frequency: 'conservative' | 'balanced' | 'aggressive'; // 8s, 5s, 3s
+  source: 'ai_stock' | 'motion_graphics' | 'cinematic' | 'reactions';
+  kenBurnsTransition: boolean;
+}
 
 export interface UploadRecord {
   id: string;
@@ -19,7 +67,7 @@ export interface QuotaState {
   totalCapacityMinutes: number; // 480 (8 hours)
   maxSingleVideoMinutes: number; // 240 (4 hours)
   records: UploadRecord[];
-  simulatedTimeOffsetMs: number; // for developer fast-forward testing
+  simulatedTimeOffsetMs: number;
 }
 
 export interface ViralityBreakdown {
@@ -75,8 +123,11 @@ export interface ViralClip {
   words: TranscriptWord[];
   bRollTracks: BRollTrigger[];
   aspectRatio: AspectRatio;
-  captionPreset: CaptionPreset;
+  captionTemplateId: string; // One of the 35 OpusClip styles
   speakerMode: SpeakerMode;
+  autoZoom: AutoZoomConfig;
+  emojiConfig: EmojiConfig;
+  bRollConfig: AutoBRollConfig;
   previewThumbnail: string;
   videoUrl?: string;
   targetPlatform: string[];
@@ -92,7 +143,7 @@ export interface VideoProject {
   thumbnailUrl: string;
   uploadedAt: number;
   status: 'queued' | 'extracting_audio' | 'transcribing_whisper' | 'detecting_scenes' | 'ranking_virality' | 'completed' | 'error';
-  progress: number; // 0 - 100
+  progress: number;
   clipsCount: number;
   clips: ViralClip[];
   rawTranscript: TranscriptWord[];
@@ -101,9 +152,12 @@ export interface VideoProject {
 export interface AIProcessingConfig {
   targetClipDuration: '<30s' | '30-60s' | '60-90s' | '3m';
   aspectRatio: AspectRatio;
-  captionPreset: CaptionPreset;
-  clipAnythingPrompt: string; // Multimodal search prompt
+  captionTemplateId: string; // 35 templates
+  clipAnythingPrompt: string;
   autoEmojis: boolean;
+  emojiConfig: EmojiConfig;
+  autoZoom: AutoZoomConfig;
+  autoBRoll: AutoBRollConfig;
   removeFillers: boolean;
   highlightKeywords: boolean;
 }

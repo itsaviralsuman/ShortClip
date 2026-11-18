@@ -6,9 +6,13 @@ import {
   Shield,
   Zap,
   Menu,
-  X
+  X,
+  User,
+  LogOut,
+  ChevronDown
 } from 'lucide-react';
 import { QuotaGauge } from './QuotaGauge';
+import { useAuth } from '../../context/AuthContext';
 
 export type ActiveTab = 'landing' | 'dashboard' | 'clips' | 'analytics';
 
@@ -26,6 +30,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   clipsCount = 4
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState<boolean>(false);
+
+  const { user, isAuthenticated, openAuthModal, signOut } = useAuth();
 
   const handleTabClick = (tab: ActiveTab) => {
     setActiveTab(tab);
@@ -72,7 +79,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Showcase</span>
+              <span>Home</span>
             </button>
 
             <button
@@ -115,12 +122,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Right Action: Quota Gauge + Ingest CTA + Mobile Menu Button */}
+          {/* Right Action: Quota Gauge + Sign In / User Profile + Ingest CTA */}
           <div className="flex items-center gap-2">
             <div className="hidden lg:block">
               <QuotaGauge compact />
             </div>
 
+            {/* Repurpose Video CTA */}
             <button
               onClick={onOpenUploadModal}
               className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-[11px] sm:text-xs font-bold shadow-lg shadow-purple-500/25 transition duration-200 active:scale-95 shrink-0"
@@ -129,6 +137,56 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden xs:inline">Repurpose</span>
               <span>Video</span>
             </button>
+
+            {/* Sign In / User Profile Button */}
+            {isAuthenticated && user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-studio-900 border border-slate-700 hover:border-purple-500/50 transition text-xs"
+                >
+                  <div className="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border border-purple-500/40 shrink-0">
+                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-brand-emerald ring-1 ring-black" />
+                  </div>
+                  <span className="hidden sm:inline font-semibold text-white max-w-[80px] truncate">
+                    {user.name.split(' ')[0]}
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:inline" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl glass-panel-elevated border border-purple-500/30 p-2 shadow-2xl z-50 text-xs animate-fade-in">
+                    <div className="p-2 border-b border-slate-800">
+                      <div className="font-bold text-white truncate">{user.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono truncate">{user.email}</div>
+                      <div className="inline-block mt-1.5 px-2 py-0.5 rounded-full bg-brand-purple/20 text-purple-300 text-[9px] font-bold border border-purple-500/30">
+                        {user.plan} • 480m Quota Active
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setUserDropdownOpen(false);
+                      }}
+                      className="w-full mt-1 flex items-center gap-2 p-2 rounded-xl text-red-300 hover:bg-red-500/10 transition text-left"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-red-400" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={openAuthModal}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-studio-900 hover:bg-studio-800 text-slate-200 border border-slate-700 text-xs font-semibold transition"
+              >
+                <User className="w-3.5 h-3.5 text-brand-purple" />
+                <span>Sign In</span>
+              </button>
+            )}
 
             {/* Mobile Menu Toggle Button */}
             <button
@@ -144,8 +202,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Dropdown Navigation Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-studio-950/95 border-b border-purple-500/30 px-4 py-3 space-y-2 animate-fade-in backdrop-blur-xl">
-            <div className="pb-2 mb-2 border-b border-slate-800">
+            <div className="pb-2 mb-2 border-b border-slate-800 flex items-center justify-between">
               <QuotaGauge compact />
+              {!isAuthenticated && (
+                <button
+                  onClick={() => {
+                    openAuthModal();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-brand-purple text-white text-[11px] font-semibold"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
 
             <button
@@ -156,7 +225,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-purple-400" />
-                Showcase & Calculator
+                Home & Quota Calculator
               </span>
             </button>
 

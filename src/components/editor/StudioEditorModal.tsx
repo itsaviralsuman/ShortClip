@@ -11,8 +11,7 @@ import {
   Zap,
   Scissors,
   Smartphone,
-  Palette,
-  Clock
+  Palette
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ViralClip } from '../../types';
@@ -30,10 +29,13 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
     toggleWordDeleted,
     removeFillerWordsFromClip,
     removeSilencesFromClip,
-    updateClipCaptionPreset,
+    updateClipCaptionTemplate,
     updateClipAspectRatio,
     updateClipSpeakerMode,
-    updateClipHookTitle
+    updateClipHookTitle,
+    updateClipAutoZoom,
+    updateClipEmojiConfig,
+    updateClipBRollConfig
   } = useVideoProjects();
 
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -77,7 +79,7 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
         spread: 70,
         origin: { y: 0.6 }
       });
-      alert(`Master Export Rendered! 1080x1920 (9:16) file with synced ${clip.captionPreset.toUpperCase()} captions ready for TikTok & Shorts.`);
+      alert(`Master Export Rendered! 1080x1920 (9:16) file with ${clip.captionTemplateId.toUpperCase()} template, dynamic Auto-Zoom, and AI Emojis ready for TikTok & Shorts.`);
     }, 1800);
   };
 
@@ -142,7 +144,7 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
         </div>
       </header>
 
-      {/* MOBILE SEGMENTED CONTROL BAR (Shown on phones/tablets < lg) */}
+      {/* MOBILE SEGMENTED CONTROL BAR */}
       <div className="lg:hidden bg-studio-900 border-b border-slate-800 px-3 py-1.5 flex items-center justify-around text-xs shrink-0">
         <button
           onClick={() => setMobileTab('canvas')}
@@ -171,12 +173,11 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
           }`}
         >
           <Palette className="w-3.5 h-3.5" />
-          <span>Brand</span>
+          <span>Brand & Styles</span>
         </button>
       </div>
 
       {/* 2. MAIN WORKSPACE */}
-      {/* On Laptops (lg:): All 3 side-by-side columns. On Phones (< lg): Active tab view */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Doc-Style Transcript Panel */}
         <div className={`w-full lg:w-80 shrink-0 h-full ${mobileTab === 'transcript' ? 'block' : 'hidden lg:block'}`}>
@@ -200,8 +201,11 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
             isPlaying={isPlaying}
             onTogglePlay={handleTogglePlay}
             aspectRatio={clip.aspectRatio}
-            captionPreset={clip.captionPreset}
+            captionTemplateId={clip.captionTemplateId}
             speakerMode={clip.speakerMode}
+            autoZoom={clip.autoZoom}
+            emojiConfig={clip.emojiConfig}
+            bRollConfig={clip.bRollConfig}
             hookTitle={clip.hookTitle}
             onUpdateHookTitle={(title) => updateClipHookTitle(clip.id, title)}
             words={clip.words}
@@ -209,15 +213,21 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
           />
         </div>
 
-        {/* Right: Brand Kit & Styling Panel */}
-        <div className={`w-full lg:w-80 shrink-0 h-full ${mobileTab === 'brand' ? 'block' : 'hidden lg:block'}`}>
+        {/* Right: Brand Kit & 35 Styles Panel */}
+        <div className={`w-full lg:w-88 shrink-0 h-full ${mobileTab === 'brand' ? 'block' : 'hidden lg:block'}`}>
           <BrandKitPanel
             aspectRatio={clip.aspectRatio}
             onUpdateAspectRatio={(ratio) => updateClipAspectRatio(clip.id, ratio)}
             speakerMode={clip.speakerMode}
             onUpdateSpeakerMode={(mode) => updateClipSpeakerMode(clip.id, mode)}
-            captionPreset={clip.captionPreset}
-            onUpdateCaptionPreset={(preset) => updateClipCaptionPreset(clip.id, preset)}
+            captionTemplateId={clip.captionTemplateId}
+            onUpdateCaptionTemplate={(templateId) => updateClipCaptionTemplate(clip.id, templateId)}
+            autoZoom={clip.autoZoom}
+            onUpdateAutoZoom={(zoom) => updateClipAutoZoom(clip.id, zoom)}
+            emojiConfig={clip.emojiConfig}
+            onUpdateEmojiConfig={(emojis) => updateClipEmojiConfig(clip.id, emojis)}
+            bRollConfig={clip.bRollConfig}
+            onUpdateBRollConfig={(broll) => updateClipBRollConfig(clip.id, broll)}
           />
         </div>
       </div>

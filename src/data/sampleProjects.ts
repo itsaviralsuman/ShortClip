@@ -57,8 +57,27 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     endTime: 15.3,
     duration: 15.3,
     aspectRatio: '9:16',
-    captionPreset: 'hormozi',
+    captionTemplateId: 'hormozi-yellow',
     speakerMode: 'split-top-bottom',
+    autoZoom: {
+      enabled: true,
+      energy: 'dynamic',
+      zoomScale: 1.15,
+      speed: 'smooth'
+    },
+    emojiConfig: {
+      enabled: true,
+      density: 'medium',
+      animation: 'bounce',
+      position: 'above',
+      pack: 'viral_fire'
+    },
+    bRollConfig: {
+      enabled: true,
+      frequency: 'balanced',
+      source: 'ai_stock',
+      kenBurnsTransition: true
+    },
     previewThumbnail: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&auto=format&fit=crop&q=80',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     targetPlatform: ['TikTok', 'Instagram Reels', 'YouTube Shorts'],
@@ -94,8 +113,27 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     endTime: 15.3,
     duration: 7.8,
     aspectRatio: '9:16',
-    captionPreset: 'mrbeast',
+    captionTemplateId: 'mrbeast-comic',
     speakerMode: 'single',
+    autoZoom: {
+      enabled: true,
+      energy: 'high_energy',
+      zoomScale: 1.25,
+      speed: 'punchy'
+    },
+    emojiConfig: {
+      enabled: true,
+      density: 'high',
+      animation: 'pop',
+      position: 'above',
+      pack: 'growth_tech'
+    },
+    bRollConfig: {
+      enabled: true,
+      frequency: 'aggressive',
+      source: 'motion_graphics',
+      kenBurnsTransition: true
+    },
     previewThumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
     targetPlatform: ['YouTube Shorts', 'TikTok'],
@@ -130,8 +168,27 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     endTime: 7.3,
     duration: 5.8,
     aspectRatio: '9:16',
-    captionPreset: 'iman',
+    captionTemplateId: 'iman-gold',
     speakerMode: 'split-top-bottom',
+    autoZoom: {
+      enabled: true,
+      energy: 'subtle',
+      zoomScale: 1.08,
+      speed: 'smooth'
+    },
+    emojiConfig: {
+      enabled: true,
+      density: 'low',
+      animation: 'float',
+      position: 'inline',
+      pack: 'money_crypto'
+    },
+    bRollConfig: {
+      enabled: false,
+      frequency: 'conservative',
+      source: 'cinematic',
+      kenBurnsTransition: true
+    },
     previewThumbnail: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&auto=format&fit=crop&q=80',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
     targetPlatform: ['Instagram Reels', 'TikTok', 'LinkedIn'],
@@ -164,8 +221,27 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     endTime: 15.3,
     duration: 7.3,
     aspectRatio: '9:16',
-    captionPreset: 'minimalist',
+    captionTemplateId: 'classic-white-box',
     speakerMode: 'single',
+    autoZoom: {
+      enabled: true,
+      energy: 'dynamic',
+      zoomScale: 1.15,
+      speed: 'smooth'
+    },
+    emojiConfig: {
+      enabled: true,
+      density: 'medium',
+      animation: 'pulse',
+      position: 'above',
+      pack: 'viral_fire'
+    },
+    bRollConfig: {
+      enabled: false,
+      frequency: 'balanced',
+      source: 'ai_stock',
+      kenBurnsTransition: true
+    },
     previewThumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
     targetPlatform: ['YouTube Shorts', 'LinkedIn'],
