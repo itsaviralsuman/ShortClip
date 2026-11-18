@@ -30,6 +30,7 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
     removeFillerWordsFromClip,
     removeSilencesFromClip,
     updateClipCaptionTemplate,
+    updateClipLanguage,
     updateClipAspectRatio,
     updateClipSpeakerMode,
     updateClipHookTitle,
@@ -223,6 +224,8 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
             onUpdateSpeakerMode={(mode) => updateClipSpeakerMode(clip.id, mode)}
             captionTemplateId={clip.captionTemplateId}
             onUpdateCaptionTemplate={(templateId) => updateClipCaptionTemplate(clip.id, templateId)}
+            language={clip.language}
+            onUpdateLanguage={(lang) => updateClipLanguage(clip.id, lang)}
             autoZoom={clip.autoZoom}
             onUpdateAutoZoom={(zoom) => updateClipAutoZoom(clip.id, zoom)}
             emojiConfig={clip.emojiConfig}

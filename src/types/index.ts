@@ -59,6 +59,8 @@ export interface ActiveDeviceSession {
 
 export type CaptionChunkMode = 'karaoke_phrase' | 'single_punch' | 'stacked_lines';
 
+export type VideoLanguage = 'hindi' | 'english' | 'hinglish';
+
 export interface AutoZoomConfig {
   enabled: boolean;
   energy: 'subtle' | 'dynamic' | 'high_energy';
@@ -155,6 +157,7 @@ export interface ViralClip {
   captionTemplateId: string; // One of the 35 OpusClip styles
   captionChunkMode?: CaptionChunkMode; // Opus phrase karaoke vs single punch
   customHighlightColor?: string; // Optional custom active word highlight
+  language?: VideoLanguage;
   speakerMode: SpeakerMode;
   autoZoom: AutoZoomConfig;
   emojiConfig: EmojiConfig;
@@ -171,6 +174,7 @@ export interface VideoProject {
   sourceType: 'local' | 'url';
   sourceUrl?: string;
   youtubeId?: string;
+  language?: VideoLanguage;
   durationMinutes: number;
   durationFormatted: string;
   thumbnailUrl: string;
@@ -184,6 +188,7 @@ export interface VideoProject {
 
 export interface AIProcessingConfig {
   targetClipDuration: '<30s' | '30-60s' | '60-90s' | '3m';
+  language?: VideoLanguage;
   aspectRatio: AspectRatio;
   captionTemplateId: string; // 35 templates
   clipAnythingPrompt: string;

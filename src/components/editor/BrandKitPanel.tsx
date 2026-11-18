@@ -4,7 +4,8 @@ import {
   SpeakerMode,
   AutoZoomConfig,
   EmojiConfig,
-  AutoBRollConfig
+  AutoBRollConfig,
+  VideoLanguage
 } from '../../types';
 import { OPUS_CAPTION_TEMPLATES } from '../../data/captionTemplates';
 import {
@@ -20,7 +21,8 @@ import {
   AtSign,
   Sparkles,
   Zap,
-  Sliders
+  Sliders,
+  Globe
 } from 'lucide-react';
 
 interface BrandKitPanelProps {
@@ -30,6 +32,8 @@ interface BrandKitPanelProps {
   onUpdateSpeakerMode: (mode: SpeakerMode) => void;
   captionTemplateId: string;
   onUpdateCaptionTemplate: (templateId: string) => void;
+  language?: VideoLanguage;
+  onUpdateLanguage?: (lang: VideoLanguage) => void;
   autoZoom: AutoZoomConfig;
   onUpdateAutoZoom: (zoom: Partial<AutoZoomConfig>) => void;
   emojiConfig: EmojiConfig;
@@ -45,6 +49,8 @@ export const BrandKitPanel: React.FC<BrandKitPanelProps> = ({
   onUpdateSpeakerMode,
   captionTemplateId,
   onUpdateCaptionTemplate,
+  language = 'hinglish',
+  onUpdateLanguage,
   autoZoom,
   onUpdateAutoZoom,
   emojiConfig,
@@ -97,6 +103,40 @@ export const BrandKitPanel: React.FC<BrandKitPanelProps> = ({
       {/* Tab 1: 35 OpusClip Caption Templates */}
       {activeTab === 'captions' && (
         <div className="flex-1 flex flex-col overflow-hidden p-3 space-y-3">
+          {/* Language Selector */}
+          <div className="p-2.5 rounded-xl bg-studio-900 border border-slate-800 space-y-2 shrink-0">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="flex items-center gap-1.5 text-slate-300 font-semibold">
+                <Globe className="w-3.5 h-3.5 text-purple-400" />
+                Language / भाषा
+              </span>
+              <span className="text-[10px] text-purple-300 px-2 py-0.5 rounded-full bg-purple-500/20 uppercase font-mono font-bold border border-purple-500/30">
+                {language}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { id: 'hinglish', label: 'Hinglish', sub: 'Roman Hindi' },
+                { id: 'hindi', label: 'हिंदी', sub: 'Devanagari' },
+                { id: 'english', label: 'English', sub: 'Global' },
+              ].map((lang) => (
+                <button
+                  key={lang.id}
+                  type="button"
+                  onClick={() => onUpdateLanguage && onUpdateLanguage(lang.id as VideoLanguage)}
+                  className={`py-1.5 px-2 rounded-lg text-center transition flex flex-col items-center justify-center border ${
+                    language === lang.id
+                      ? 'bg-purple-600/25 text-purple-200 border-purple-500 font-bold shadow-sm shadow-purple-500/30 ring-1 ring-purple-500/40'
+                      : 'bg-studio-950 text-slate-400 border-slate-800 hover:text-white hover:bg-studio-800'
+                  }`}
+                >
+                  <span className="text-xs font-semibold leading-tight">{lang.label}</span>
+                  <span className="text-[9px] text-slate-500 leading-tight">{lang.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Search & Category Pills */}
           <div className="space-y-2 shrink-0">
             <div className="relative">

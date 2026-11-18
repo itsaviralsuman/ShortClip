@@ -8,9 +8,10 @@ import {
   ZoomIn,
   Smile,
   Film,
-  Type
+  Type,
+  Globe
 } from 'lucide-react';
-import { AIProcessingConfig, AspectRatio, AutoZoomConfig, EmojiConfig, AutoBRollConfig } from '../../types';
+import { AIProcessingConfig, AspectRatio, AutoZoomConfig, EmojiConfig, AutoBRollConfig, VideoLanguage } from '../../types';
 import { OPUS_CAPTION_TEMPLATES } from '../../data/captionTemplates';
 
 interface ConfigModalProps {
@@ -29,6 +30,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   videoDurationMinutes
 }) => {
   const [targetClipDuration, setTargetClipDuration] = useState<AIProcessingConfig['targetClipDuration']>('30-60s');
+  const [language, setLanguage] = useState<VideoLanguage>('hinglish');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
   const [captionTemplateId, setCaptionTemplateId] = useState<string>('hormozi-yellow');
   const [clipAnythingPrompt, setClipAnythingPrompt] = useState<string>('');
@@ -70,6 +72,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     e.preventDefault();
     onConfirm({
       targetClipDuration,
+      language,
       aspectRatio,
       captionTemplateId,
       clipAnythingPrompt,
@@ -131,6 +134,43 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 >
                   <div className="font-bold text-xs text-slate-200">{item.label}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5">{item.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. Core 3 Languages (Hindi, English, Hinglish) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-white flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-brand-emerald" />
+                <span>Primary Video Language (3 Languages)</span>
+              </label>
+              <span className="text-[10px] font-mono text-purple-300">
+                Whisper AI Multilingual Engine
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: 'hinglish', label: 'Hinglish (Viral)', desc: 'Roman Hindi + English', flag: '🇮🇳' },
+                { id: 'hindi', label: 'Hindi (हिंदी)', desc: 'Devanagari Subtitles', flag: '🇮🇳' },
+                { id: 'english', label: 'English', desc: 'Global English', flag: '🇬🇧' },
+              ].map((lang) => (
+                <button
+                  type="button"
+                  key={lang.id}
+                  onClick={() => setLanguage(lang.id as any)}
+                  className={`p-2.5 rounded-xl border text-left transition ${
+                    language === lang.id
+                      ? 'bg-brand-purple/20 border-brand-purple text-white shadow-lg shadow-purple-500/20'
+                      : 'bg-studio-900 border-slate-800 text-slate-400 hover:bg-studio-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-slate-200">
+                    <span>{lang.flag}</span>
+                    <span>{lang.label}</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">{lang.desc}</div>
                 </button>
               ))}
             </div>

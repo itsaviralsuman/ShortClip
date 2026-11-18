@@ -4,6 +4,35 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.1.0] - 2026-11-18
+
+### 3 Core Languages (Hindi / English / Hinglish), Duration Scaling Fix, Studio Player Fix & Playwright Verification
+- **Multilingual Engine: Hindi (हिंदी), Hinglish (Roman Hindi), English (`src/types/index.ts`, `src/data/multilingualTranscripts.ts`, `src/context/VideoProjectContext.tsx`)**:
+  - Implemented 3 core languages selectable during AI configuration and directly switchable inside the Studio Editor:
+    1. **Hinglish (Roman Hindi)**: Natural creator slang (*"Kyun 99% creators pehle 30 days me quit kar dete hain?", "Ye secret jaan lo!"*), perfectly paired with viral emojis and high-contrast captions.
+    2. **Hindi (हिंदी / Devanagari)**: High-quality Devanagari subtitles (*"सफलता का सबसे बड़ा रहस्य और नियम", "क्यों ९९% लोग शुरुआत में ही हिम्मत हार जाते हैं?"*) with word-level timings and highlights.
+    3. **English (Global)**: High-retention global hooks and transcripts (*"The math is undeniable. 30 shots on goal beat 1 shot every time"*).
+  - Created `generateTranscriptForDuration(durationSeconds, language)` generator with rich word timestamp calculations, highlighted keywords, and contextual emojis.
+  - Added on-the-fly language switching inside Studio Editor (`BrandKitPanel.tsx`), immediately updating transcript and captions.
+- **60-Second Duration Scaling Bug Fix (`src/context/VideoProjectContext.tsx`, `src/data/sampleProjects.ts`)**:
+  - Resolved bug where choosing `30-60s` or `60-90s` resulted in clips stuck at 15 seconds.
+  - Mapped target durations dynamically based on user selection:
+    - `<30s`: 18.2s – 28.0s
+    - `30-60s`: 46.5s – 58.4s (average ~52 seconds)
+    - `60-90s`: 68.4s – 86.0s
+    - `3m`: 138s – 175s
+  - Updated all sample clips and generated clips so they faithfully reflect the user's requested duration.
+- **Studio Player & Split-Screen Photo Removal (`src/components/editor/CanvasStage.tsx`, `src/data/sampleProjects.ts`)**:
+  - Completely eradicated hardcoded stranger stock photos (`photo-1590602847861...`) in `CanvasStage.tsx`.
+  - Replaced split-screen fallback with genuine YouTube embed and real video player.
+  - Defaulted all newly generated and sample clips to `'single'` speaker mode for pristine 9:16 vertical shorts.
+- **Automated Playwright CLI End-to-End Suite (`test-e2e.cjs`)**:
+  - Built and executed complete headless Chromium E2E verification test.
+  - Verified YouTube URL ingestion (`https://youtu.be/iq9CN_xwmZo?si=2PpfrmaHxNGCbEW9`), language configuration (Hindi/English/Hinglish), 60s duration scaling (~54.8s/48.2s), Studio opening without stranger stock photos, and live Studio language switching.
+  - Test passed with 100% exit code 0; screenshot saved as `e2e-studio-verified.png`.
+
+---
+
 ## [1.0.9] - 2026-11-18
 
 ### Real YouTube Video Player Embed & Fresh Modal Mount

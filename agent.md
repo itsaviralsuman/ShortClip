@@ -3,7 +3,7 @@
 ## System Configuration
 - **Active Skill**: `senior-multi-agent-squad` (Antigravity and Gemini Skill Plugin)
 - **Framework Status**: Persistent Active Mode (Default ON)
-- **Current Version**: `v1.0.9` (Real YouTube Embed Playback & Fresh Ingestion Mount)
+- **Current Version**: `v1.1.0` (3 Core Languages: Hindi/English/Hinglish, 60s Duration Scaling, Clean Studio Player & Playwright E2E Verification)
 - **Current Attempt**: `attempt = 1` of `max_retries = 3`
 
 ## Squad Hierarchy & Roles

@@ -144,30 +144,80 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
           {/* Render Single vs Split-Screen */}
           {speakerMode === 'split-top-bottom' ? (
             <div className="w-full h-full flex flex-col">
-              {/* Top Speaker: Host */}
-              <div className="relative flex-1 bg-slate-900 overflow-hidden border-b-2 border-brand-purple">
-                <img
-                  src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&auto=format&fit=crop&q=80"
-                  alt="Host"
-                  className="w-full h-full object-cover filter brightness-90"
-                />
-                <div className="absolute top-4 sm:top-8 left-1/2 -translate-x-1/2 w-20 sm:w-28 h-20 sm:h-28 border-2 border-brand-emerald/70 rounded-xl pointer-events-none flex flex-col justify-between p-1">
-                  <span className="text-[8px] sm:text-[9px] font-mono text-brand-emerald bg-black/60 px-1 rounded w-max">
-                    Host (98%)
+              {/* Top Speaker: Host (Using Real Media / YouTube Stream) */}
+              <div className="relative flex-1 bg-black overflow-hidden border-b-2 border-brand-purple">
+                {youtubeId ? (
+                  isPlaying ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
+                      title="Host Track"
+                      className="w-full h-full object-cover pointer-events-none scale-150 origin-top"
+                    />
+                  ) : (
+                    <img
+                      src={posterUrl}
+                      alt="Host Track"
+                      className="w-full h-full object-cover filter brightness-90"
+                    />
+                  )
+                ) : videoUrl ? (
+                  <video
+                    src={videoUrl}
+                    poster={posterUrl}
+                    loop
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={posterUrl}
+                    alt="Host Track"
+                    className="w-full h-full object-cover filter brightness-90"
+                  />
+                )}
+                <div className="absolute top-2 left-2 z-20 pointer-events-none">
+                  <span className="text-[8px] sm:text-[9px] font-mono text-brand-emerald bg-black/80 px-1.5 py-0.5 rounded border border-brand-emerald/40">
+                    Host Focal Track (98%)
                   </span>
                 </div>
               </div>
 
-              {/* Bottom Speaker: Guest */}
-              <div className="relative flex-1 bg-slate-900 overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80"
-                  alt="Guest"
-                  className="w-full h-full object-cover filter brightness-90"
-                />
-                <div className="absolute top-4 sm:top-8 left-1/2 -translate-x-1/2 w-20 sm:w-28 h-20 sm:h-28 border-2 border-brand-cyan/70 rounded-xl pointer-events-none flex flex-col justify-between p-1">
-                  <span className="text-[8px] sm:text-[9px] font-mono text-brand-cyan bg-black/60 px-1 rounded w-max">
-                    Guest (96%)
+              {/* Bottom Speaker: Guest / Context Track */}
+              <div className="relative flex-1 bg-black overflow-hidden">
+                {youtubeId ? (
+                  isPlaying ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&start=20`}
+                      title="Guest Track"
+                      className="w-full h-full object-cover pointer-events-none scale-150 origin-bottom"
+                    />
+                  ) : (
+                    <img
+                      src={posterUrl}
+                      alt="Guest Track"
+                      className="w-full h-full object-cover filter brightness-85"
+                    />
+                  )
+                ) : videoUrl ? (
+                  <video
+                    src={videoUrl}
+                    poster={posterUrl}
+                    loop
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={posterUrl}
+                    alt="Guest Track"
+                    className="w-full h-full object-cover filter brightness-85"
+                  />
+                )}
+                <div className="absolute top-2 left-2 z-20 pointer-events-none">
+                  <span className="text-[8px] sm:text-[9px] font-mono text-brand-cyan bg-black/80 px-1.5 py-0.5 rounded border border-brand-cyan/40">
+                    Reaction Track (96%)
                   </span>
                 </div>
               </div>
