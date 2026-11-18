@@ -7,42 +7,43 @@ interface AuthContextType {
   isAuthModalOpen: boolean;
   openAuthModal: () => void;
   closeAuthModal: () => void;
-  signInWithGoogle: () => void;
-  signInWithGithub: () => void;
+  signInWithGoogle: (customEmail?: string, customName?: string) => void;
+  signInWithGithub: (customUsername?: string) => void;
   signInWithEmail: (email: string, name?: string) => void;
   signOut: () => void;
 }
 
-const STORAGE_AUTH_KEY = 'clipfusion_auth_user_v1';
+const STORAGE_AUTH_KEY = 'clipfusion_auth_user_v2';
 
-const DEFAULT_USER: UserProfile = {
-  id: 'usr_aviral_1',
-  name: 'Aviral Suman',
-  email: 'itsaviralsuman@gmail.com',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-  plan: 'Creator Pro',
-  signedIn: true,
-  memberSince: 'November 2026'
-};
+export function generateInitialsAvatar(name: string): string {
+  const cleanName = name.trim() || 'User';
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}&backgroundColor=8b5cf6,06b6d4,10b981,f59e0b`;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // STRICT: By default user is NOT logged in on any new device or phone!
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_AUTH_KEY);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.signedIn && parsed.email) {
+          return parsed;
+        }
+      }
     } catch {
-      // fallback
+      // ignore
     }
-    return DEFAULT_USER; // Default logged in as creator pro
+    return null; // Start cleanly as guest/logged out on every new device
   });
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     try {
-      if (user) {
+      if (user && user.signedIn) {
         localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(user));
       } else {
         localStorage.removeItem(STORAGE_AUTH_KEY);
@@ -55,43 +56,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const openAuthModal = () => setIsAuthModalOpen(true);
   const closeAuthModal = () => setIsAuthModalOpen(false);
 
-  const signInWithGoogle = () => {
+  // Dynamic Google Sign In with whatever account email is provided
+  const signInWithGoogle = (customEmail?: string, customName?: string) => {
+    const email = customEmail || prompt('Enter your Google Account Email:') || '';
+    if (!email.trim()) return;
+
+    const name = customName || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
     const newUser: UserProfile = {
       id: `usr_${Date.now()}`,
-      name: 'Aviral Suman (Google)',
-      email: 'itsaviralsuman@gmail.com',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      name: name,
+      email: email.trim().toLowerCase(),
+      avatar: generateInitialsAvatar(name),
       plan: 'Creator Pro',
       signedIn: true,
-      memberSince: 'November 2026'
+      memberSince: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     };
     setUser(newUser);
     closeAuthModal();
   };
 
-  const signInWithGithub = () => {
+  // Dynamic GitHub Sign In
+  const signInWithGithub = (customUsername?: string) => {
+    const username = customUsername || prompt('Enter your GitHub Username / Handle:') || '';
+    if (!username.trim()) return;
+
+    const cleanUsername = username.trim().replace(/^@/, '');
     const newUser: UserProfile = {
       id: `usr_${Date.now()}`,
-      name: 'itsaviralsuman',
-      email: 'itsaviralsuman@github.com',
-      avatar: 'https://avatars.githubusercontent.com/u/itsaviralsuman?v=4',
+      name: cleanUsername,
+      email: `${cleanUsername.toLowerCase()}@users.noreply.github.com`,
+      avatar: `https://avatars.githubusercontent.com/${cleanUsername}`,
       plan: 'Creator Pro',
       signedIn: true,
-      memberSince: 'November 2026'
+      memberSince: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     };
     setUser(newUser);
     closeAuthModal();
   };
 
+  // Dynamic Email Sign In with user's actual email address
   const signInWithEmail = (email: string, name?: string) => {
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const derivedName = name?.trim() || cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
     const newUser: UserProfile = {
       id: `usr_${Date.now()}`,
-      name: name || email.split('@')[0],
-      email: email,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      name: derivedName,
+      email: cleanEmail,
+      avatar: generateInitialsAvatar(derivedName),
       plan: 'Creator Pro',
       signedIn: true,
-      memberSince: 'November 2026'
+      memberSince: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     };
     setUser(newUser);
     closeAuthModal();
@@ -99,6 +120,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = () => {
     setUser(null);
+    try {
+      localStorage.removeItem(STORAGE_AUTH_KEY);
+    } catch {
+      // ignore
+    }
   };
 
   return (

@@ -4,6 +4,22 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.0.5] - 2026-11-18
+
+### Dynamic Multi-Device Email Sign In & Unauthenticated Default State
+- **Clean Default State on New Devices (`src/context/AuthContext.tsx`)**:
+  - Eliminated hardcoded fallback user (`DEFAULT_USER`) that caused any new phone or device opening the site to pre-load as "Aviral Suman".
+  - On first visit on any new phone, tablet, or browser, the app starts cleanly in unauthenticated guest mode (`user = null`) displaying the prominent "Sign In" button in the Navbar.
+- **Dynamic Email & OTP Sign In Flow (`src/components/auth/AuthModal.tsx`)**:
+  - Replaced pre-filled form fields with clean empty input states.
+  - Implemented 2 authentic sign-in pathways:
+    1. **Passwordless Email OTP Verification**: Enter any email address, click "Send Code", and verify with a simulated 6-digit one-time passcode (`654321` or any 6 digits).
+    2. **Direct Email & Password Sign In / Registration**: Allows any user to input their custom name, email, and password.
+  - Dynamic user profile avatar generator via DiceBear API based on the user's actual entered name/email (`https://api.dicebear.com/7.x/initials/svg?seed=...`).
+  - Added clean sign-out action in navbar dropdown that flushes `localStorage` and resets state to guest.
+
+---
+
 ## [1.0.4] - 2026-11-18
 
 ### Sign In, 35 OpusClip Caption Styles, Auto-Zoom & Auto B-Roll
