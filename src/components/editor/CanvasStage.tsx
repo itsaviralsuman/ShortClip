@@ -10,12 +10,15 @@ import {
 } from '../../types';
 import { getTemplateById } from '../../data/captionTemplates';
 import { getOpusCaptionChunk } from '../../utils/captionChunker';
+import { formatTime } from '../../utils/youtubeHelper';
 import {
   Play,
   Pause,
   Scan,
   ZoomIn,
-  Type
+  Type,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 
 interface CanvasStageProps {
@@ -24,8 +27,12 @@ interface CanvasStageProps {
   posterUrl: string;
   currentTime: number;
   duration: number;
+  startTime?: number;
+  endTime?: number;
   isPlaying: boolean;
+  isMuted?: boolean;
   onTogglePlay: () => void;
+  onToggleMute?: () => void;
   aspectRatio: AspectRatio;
   captionTemplateId: string;
   speakerMode: SpeakerMode;
@@ -44,8 +51,12 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
   posterUrl,
   currentTime,
   duration,
+  startTime = 0,
+  endTime,
   isPlaying,
+  isMuted = false,
   onTogglePlay,
+  onToggleMute,
   aspectRatio,
   captionTemplateId,
   speakerMode,
@@ -58,24 +69,68 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
   bRollTracks
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const lastSyncedTimeRef = useRef<number>(0);
+
+  const clipStart = Math.floor(startTime || 0);
+  const clipEnd = Math.floor(endTime || (clipStart + duration));
 
   // Sync play state
   useEffect(() => {
     if (videoRef.current) {
       if (isPlaying) {
+        videoRef.current.muted = !!isMuted;
         videoRef.current.play().catch(() => {});
       } else {
         videoRef.current.pause();
       }
     }
-  }, [isPlaying]);
-
-  // Sync time seek
-  useEffect(() => {
-    if (videoRef.current && Math.abs(videoRef.current.currentTime - currentTime) > 0.4) {
-      videoRef.current.currentTime = currentTime;
+    if (iframeRef.current?.contentWindow) {
+      const cmd = isPlaying ? 'playVideo' : 'pauseVideo';
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: cmd, args: [] }),
+        '*'
+      );
     }
-  }, [currentTime]);
+  }, [isPlaying, isMuted]);
+
+  // Sync mute state
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = !!isMuted;
+    }
+    if (iframeRef.current?.contentWindow) {
+      const cmd = isMuted ? 'mute' : 'unMute';
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: cmd, args: [] }),
+        '*'
+      );
+      if (!isMuted) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+          '*'
+        );
+      }
+    }
+  }, [isMuted]);
+
+  // Sync manual seeks (>1.2s jump or reset to 0 to prevent audio stutter during smooth playback)
+  useEffect(() => {
+    const diff = Math.abs(currentTime - lastSyncedTimeRef.current);
+    if (diff > 1.2 || currentTime === 0) {
+      if (videoRef.current) {
+        videoRef.current.currentTime = currentTime;
+      }
+      if (iframeRef.current?.contentWindow) {
+        const targetTime = clipStart + currentTime;
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'seekTo', args: [targetTime, true] }),
+          '*'
+        );
+      }
+    }
+    lastSyncedTimeRef.current = currentTime;
+  }, [currentTime, clipStart]);
 
   // Determine OpusClip active chunk & active word
   const { chunkWords, activeWord } = getOpusCaptionChunk(words, currentTime, 'karaoke_phrase', 4);
@@ -149,9 +204,25 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
                 {youtubeId ? (
                   isPlaying ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
+                      ref={iframeRef}
+                      src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&start=${clipStart}&end=${clipEnd}&enablejsapi=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
                       title="Host Track"
                       className="w-full h-full object-cover pointer-events-none scale-150 origin-top"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      onLoad={() => {
+                        if (iframeRef.current?.contentWindow) {
+                          iframeRef.current.contentWindow.postMessage(
+                            JSON.stringify({ event: 'command', func: isMuted ? 'mute' : 'unMute', args: [] }),
+                            '*'
+                          );
+                          if (!isMuted) {
+                            iframeRef.current.contentWindow.postMessage(
+                              JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+                              '*'
+                            );
+                          }
+                        }
+                      }}
                     />
                   ) : (
                     <img
@@ -162,11 +233,12 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
                   )
                 ) : videoUrl ? (
                   <video
+                    ref={videoRef}
                     src={videoUrl}
                     poster={posterUrl}
                     loop
                     playsInline
-                    muted
+                    muted={isMuted}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -188,9 +260,10 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
                 {youtubeId ? (
                   isPlaying ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&start=20`}
+                      src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&start=${clipStart + 5}&end=${clipEnd}`}
                       title="Guest Track"
                       className="w-full h-full object-cover pointer-events-none scale-150 origin-bottom"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     />
                   ) : (
                     <img
@@ -227,10 +300,25 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
               {youtubeId ? (
                 isPlaying ? (
                   <iframe
-                    src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
+                    ref={iframeRef}
+                    src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&start=${clipStart}&end=${clipEnd}&enablejsapi=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
                     title="YouTube Studio Stream"
                     className="w-full h-full object-cover pointer-events-none scale-125"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    onLoad={() => {
+                      if (iframeRef.current?.contentWindow) {
+                        iframeRef.current.contentWindow.postMessage(
+                          JSON.stringify({ event: 'command', func: isMuted ? 'mute' : 'unMute', args: [] }),
+                          '*'
+                        );
+                        if (!isMuted) {
+                          iframeRef.current.contentWindow.postMessage(
+                            JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+                            '*'
+                          );
+                        }
+                      }
+                    }}
                   />
                 ) : (
                   <img
@@ -246,7 +334,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
                   poster={posterUrl}
                   loop
                   playsInline
-                  muted
+                  muted={isMuted}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -293,7 +381,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
         </div>
 
         {/* OpusClip Dynamic Animated Karaoke Captions Engine */}
-        <div className="absolute inset-x-2 sm:inset-x-3 bottom-12 sm:bottom-16 z-30 pointer-events-none text-center px-1">
+        <div className="absolute inset-x-2 sm:inset-x-3 bottom-14 sm:bottom-16 z-30 pointer-events-none text-center px-1">
           <div className="inline-flex flex-wrap items-center justify-center gap-x-1.5 sm:gap-x-2 gap-y-1 max-w-full">
             {chunkWords.map((w) => {
               const isActive = activeWord?.id === w.id;
@@ -333,12 +421,44 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
         {/* Click to Play/Pause overlay */}
         <button
           onClick={onTogglePlay}
+          data-testid="canvas-play-btn"
           className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover:bg-black/5 transition"
         >
           <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-brand-purple/90 hover:bg-brand-purple text-white flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition duration-200">
             {isPlaying ? <Pause className="w-4 h-4 sm:w-6 sm:h-6" /> : <Play className="w-4 h-4 sm:w-6 sm:h-6 fill-current ml-0.5" />}
           </div>
         </button>
+
+        {/* Working Audio Controls & Stream Cut Range Bar */}
+        <div className="absolute bottom-2 inset-x-2 sm:inset-x-3 z-30 flex items-center justify-between text-white text-[9px] sm:text-[10px] font-mono bg-black/85 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-slate-700/60 shadow-lg pointer-events-auto">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleMute?.();
+            }}
+            className="hover:text-purple-300 flex items-center gap-1.5 transition active:scale-95 pointer-events-auto"
+            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            aria-label={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            data-testid="canvas-audio-toggle-btn"
+          >
+            {isMuted ? (
+              <VolumeX className="w-3.5 h-3.5 text-red-400" />
+            ) : (
+              <Volume2 className="w-3.5 h-3.5 text-brand-emerald animate-pulse" />
+            )}
+            <span className={`text-[9px] font-bold ${isMuted ? 'text-slate-400' : 'text-brand-emerald'}`}>
+              {isMuted ? 'Muted' : 'Sound ON'}
+            </span>
+          </button>
+
+          <span className="text-slate-300">
+            {currentTime.toFixed(1)}s / {duration.toFixed(1)}s
+          </span>
+
+          <span className="text-purple-300 font-bold truncate max-w-[110px]" title="Original Stream Cut Window" data-testid="canvas-cut-time-range">
+            {formatTime(clipStart)} - {formatTime(clipEnd)}
+          </span>
+        </div>
       </div>
     </div>
   );

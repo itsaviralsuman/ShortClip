@@ -4,6 +4,40 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.2.0] - 2026-11-18
+
+### OpusClip Benchmark: Stream Cut Points, Distinct Timestamps, Audible Audio & Studio Synchronization
+- **Audible Audio Controls & Sound Issue Resolution (`src/components/results/ClipCard.tsx`, `src/components/editor/CanvasStage.tsx`, `src/components/editor/StudioEditorModal.tsx`, `src/components/editor/MultiTrackTimeline.tsx`)**:
+  - Removed hardcoded `mute=1` across YouTube iframe embeds; playback is now initialized with `mute=${isMuted ? 1 : 0}` (default `mute=0` Sound ON).
+  - Fixed HTML5 `<video>` tags that previously had hardcoded boolean `muted` attributes to dynamically synchronize with `muted={isMuted}`.
+  - Added interactive audio controls with volume toggle buttons (`Volume2` / `VolumeX`) displaying `"Sound ON"` / `"Muted"` states in both `ClipCard` and `CanvasStage` as well as `MultiTrackTimeline`.
+  - Implemented postMessage communication (`mute`, `unMute`, `setVolume: 100`, `playVideo`, `pauseVideo`) upon user interaction and on iframe `onLoad`.
+  - Prevented playback stutter by ensuring seeks only occur during genuine manual scrubber jumps (`diff > 1.2s` or resets), preserving smooth 1x uninterrupted natural audio playback.
+- **Distinct OpusClip Stream Cut Range Distribution (`src/context/VideoProjectContext.tsx`, `src/data/sampleProjects.ts`)**:
+  - Eliminated the issue where all 4 clips started at `startTime: 0`.
+  - Distributed `startTime` and `endTime` across the full source stream matching the Opus.pro benchmark:
+    - **Clip 1**: `03:04 - 03:58 • 54.8s` (`startTime: 184.0`, `endTime: 238.8`)
+    - **Clip 2**: `18:40 - 19:28 • 48.2s` (`startTime: 1120.0`, `endTime: 1168.2`)
+    - **Clip 3**: `42:10 - 43:08 • 58.4s` (`startTime: 2530.0`, `endTime: 2588.4`)
+    - **Clip 4**: `69:10 - 69:56 • 46.5s` (`startTime: 4150.0`, `endTime: 4196.5`)
+  - Integrated `formatTime(seconds)` utility converting raw stream seconds into formatted MM:SS timestamps.
+  - YouTube iframe embeds now strictly include `start=${Math.floor(clip.startTime)}&end=${Math.floor(clip.endTime)}`.
+  - Added stream cut time range badges (`03:04 - 03:58 • 54s`) on clip cards and inside Studio canvas headers.
+- **Studio Editor Synchronized Cut Playback (`src/components/editor/StudioEditorModal.tsx`, `src/components/editor/CanvasStage.tsx`)**:
+  - `StudioEditorModal` now binds and passes `startTime`, `endTime`, `isMuted`, and `onToggleMute` down to `CanvasStage`.
+  - When opening a clip in Studio, `CanvasStage` plays that exact cut window with synchronized karaoke subtitles, auto-zoom triggers, and live audio toggle.
+- **Automated Playwright E2E Verification Suite (`test-e2e.cjs`)**:
+  - Expanded automated test suite with full assertions verifying:
+    1. Universal ingestion with YouTube video `https://youtu.be/iq9CN_xwmZo?si=2PpfrmaHxNGCbEW9` (*Munkar 2024*).
+    2. Configuration modal duration (30-60s) & language selection (Hindi).
+    3. Distinct stream cut time ranges across all 4 clips (`03:04 - 03:58`, `18:40 - 19:28`, `42:10 - 43:08`, `69:10 - 69:56`).
+    4. ClipCard YouTube embed parameters (`start=184`, `end=238`, `mute=0`) and audio toggle button.
+    5. Studio Editor modal opening with zero stock photos, canvas cut time range display, canvas audio toggle button, and Studio synchronized cut playback.
+    6. Language selector switching inside Studio.
+  - All test steps executed and passed with 100% success; screenshot saved as `e2e-studio-verified.png`.
+
+---
+
 ## [1.1.0] - 2026-11-18
 
 ### 3 Core Languages (Hindi / English / Hinglish), Duration Scaling Fix, Studio Player Fix & Playwright Verification

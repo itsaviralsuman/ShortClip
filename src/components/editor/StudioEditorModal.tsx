@@ -41,6 +41,7 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
 
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
   // Mobile viewport tab mode
@@ -200,8 +201,12 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
             posterUrl={clip.previewThumbnail}
             currentTime={currentTime}
             duration={clip.duration}
+            startTime={clip.startTime}
+            endTime={clip.endTime}
             isPlaying={isPlaying}
+            isMuted={isMuted}
             onTogglePlay={handleTogglePlay}
+            onToggleMute={() => setIsMuted(!isMuted)}
             aspectRatio={clip.aspectRatio}
             captionTemplateId={clip.captionTemplateId}
             speakerMode={clip.speakerMode}
@@ -241,7 +246,9 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
         currentTime={currentTime}
         duration={clip.duration}
         isPlaying={isPlaying}
+        isMuted={isMuted}
         onTogglePlay={handleTogglePlay}
+        onToggleMute={() => setIsMuted(!isMuted)}
         onSeek={handleSeek}
         words={clip.words}
         bRollTracks={clip.bRollTracks}

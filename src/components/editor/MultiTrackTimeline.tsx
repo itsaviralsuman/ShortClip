@@ -6,7 +6,9 @@ import {
   Video,
   Type,
   Image,
-  Music
+  Music,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { TranscriptWord, BRollTrigger } from '../../types';
 
@@ -14,7 +16,9 @@ interface MultiTrackTimelineProps {
   currentTime: number;
   duration: number;
   isPlaying: boolean;
+  isMuted?: boolean;
   onTogglePlay: () => void;
+  onToggleMute?: () => void;
   onSeek: (time: number) => void;
   words: TranscriptWord[];
   bRollTracks: BRollTrigger[];
@@ -24,7 +28,9 @@ export const MultiTrackTimeline: React.FC<MultiTrackTimelineProps> = ({
   currentTime,
   duration,
   isPlaying,
+  isMuted = false,
   onTogglePlay,
+  onToggleMute,
   onSeek,
   words,
   bRollTracks
@@ -56,11 +62,28 @@ export const MultiTrackTimeline: React.FC<MultiTrackTimelineProps> = ({
 
           <button
             onClick={onTogglePlay}
+            data-testid="timeline-play-btn"
             className="px-2.5 sm:px-3 py-1 rounded-lg bg-brand-purple hover:bg-purple-600 text-white font-bold flex items-center gap-1 shadow-md shadow-purple-500/20 transition active:scale-95"
           >
             {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current ml-0.5" />}
             <span className="text-[10px] sm:text-[11px]">{isPlaying ? 'Pause' : 'Play'}</span>
           </button>
+
+          {onToggleMute && (
+            <button
+              onClick={onToggleMute}
+              className={`px-2 sm:px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 border transition active:scale-95 ${
+                isMuted
+                  ? 'bg-slate-800 text-red-400 border-red-500/40 hover:bg-slate-700'
+                  : 'bg-brand-emerald/20 text-brand-emerald border-brand-emerald/40 hover:bg-brand-emerald/30'
+              }`}
+              title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+              data-testid="timeline-audio-toggle-btn"
+            >
+              {isMuted ? <VolumeX className="w-3 h-3 text-red-400" /> : <Volume2 className="w-3 h-3 text-brand-emerald" />}
+              <span className="text-[10px] sm:text-[11px] hidden xs:inline">{isMuted ? 'Muted' : 'Sound ON'}</span>
+            </button>
+          )}
 
           <div className="font-mono text-slate-300 font-semibold text-[11px] sm:text-xs ml-1 sm:ml-2">
             <span className="text-brand-cyan">{currentTime.toFixed(1)}s</span> / {duration.toFixed(1)}s

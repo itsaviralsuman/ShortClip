@@ -5,6 +5,13 @@ export function extractYouTubeId(url: string): string | null {
   return match && match[1] ? match[1] : null;
 }
 
+export function formatTime(seconds: number): string {
+  const totalSec = Math.floor(seconds || 0);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
 export interface VideoMetadata {
   title: string;
   thumbnail: string;

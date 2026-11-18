@@ -20,6 +20,7 @@ import confetti from 'canvas-confetti';
 import { ViralClip } from '../../types';
 import { getTemplateById } from '../../data/captionTemplates';
 import { getOpusCaptionChunk } from '../../utils/captionChunker';
+import { formatTime } from '../../utils/youtubeHelper';
 
 interface ClipCardProps {
   clip: ViralClip;
@@ -29,13 +30,14 @@ interface ClipCardProps {
 export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const [isMuted, setIsMuted] = useState<boolean>(true);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showRadar, setShowRadar] = useState<boolean>(false);
   const [selectedSocialTab, setSelectedSocialTab] = useState<'tiktok' | 'reels' | 'shorts' | 'linkedin'>('tiktok');
   const [copiedCaption, setCopiedCaption] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Dynamic template details from the 35 OpusClip styles
   const tpl = getTemplateById(clip.captionTemplateId);
@@ -48,9 +50,11 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
         if (videoRef.current) {
           setCurrentTime(videoRef.current.currentTime);
         } else {
-          setCurrentTime((t) => (t >= clip.duration ? 0 : t + 0.1));
+          setCurrentTime((t) => (t >= clip.duration ? 0 : Number((t + 0.1).toFixed(1))));
         }
       }, 100);
+    } else {
+      setCurrentTime(0);
     }
     return () => clearInterval(interval);
   }, [isPlaying, clip.duration]);
@@ -60,10 +64,33 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
+        videoRef.current.muted = isMuted;
         videoRef.current.play().catch(() => {});
       }
     }
     setIsPlaying(!isPlaying);
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    if (videoRef.current) {
+      videoRef.current.muted = nextMuted;
+    }
+    if (iframeRef.current?.contentWindow) {
+      const cmd = nextMuted ? 'mute' : 'unMute';
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: cmd, args: [] }),
+        '*'
+      );
+      if (!nextMuted) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+          '*'
+        );
+      }
+    }
   };
 
   const handleExportHD = () => {
@@ -120,10 +147,25 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           {clip.youtubeId ? (
             isPlaying ? (
               <iframe
-                src={`https://www.youtube.com/embed/${clip.youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${clip.youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
+                ref={iframeRef}
+                src={`https://www.youtube.com/embed/${clip.youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&start=${Math.floor(clip.startTime)}&end=${Math.floor(clip.endTime)}&enablejsapi=1&controls=0&loop=1&playlist=${clip.youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
                 title={clip.title}
                 className="w-full h-full object-cover pointer-events-none scale-125"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                onLoad={() => {
+                  if (iframeRef.current?.contentWindow) {
+                    iframeRef.current.contentWindow.postMessage(
+                      JSON.stringify({ event: 'command', func: isMuted ? 'mute' : 'unMute', args: [] }),
+                      '*'
+                    );
+                    if (!isMuted) {
+                      iframeRef.current.contentWindow.postMessage(
+                        JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+                        '*'
+                      );
+                    }
+                  }
+                }}
               />
             ) : (
               <img
@@ -212,6 +254,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
         {/* Play/Pause Button Overlay */}
         <button
           onClick={togglePlay}
+          data-testid="clipcard-play-btn"
           className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition"
         >
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-purple/90 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition duration-200">
@@ -220,9 +263,22 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
         </button>
 
         {/* Audio Mute Toggle & Time Scrubber */}
-        <div className="absolute bottom-2 inset-x-3 z-20 flex items-center justify-between text-white text-[9px] sm:text-[10px] font-mono bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg">
-          <button onClick={() => setIsMuted(!isMuted)} className="hover:text-purple-300">
-            {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+        <div className="absolute bottom-2 inset-x-3 z-20 flex items-center justify-between text-white text-[9px] sm:text-[10px] font-mono bg-black/75 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-slate-700/60 shadow-lg">
+          <button
+            onClick={toggleMute}
+            className="hover:text-purple-300 flex items-center gap-1.5 transition active:scale-95"
+            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            aria-label={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            data-testid="audio-toggle-btn"
+          >
+            {isMuted ? (
+              <VolumeX className="w-3.5 h-3.5 text-red-400" />
+            ) : (
+              <Volume2 className="w-3.5 h-3.5 text-brand-emerald animate-pulse" />
+            )}
+            <span className={`text-[9px] font-bold ${isMuted ? 'text-slate-400' : 'text-brand-emerald'}`}>
+              {isMuted ? 'Muted' : 'Sound ON'}
+            </span>
           </button>
           <span>
             {currentTime.toFixed(1)}s / {clip.duration.toFixed(1)}s
@@ -262,11 +318,11 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
             </div>
 
             <div className="flex items-center gap-1.5 text-[11px] sm:text-xs">
-              <span className="text-slate-400 font-mono">
-                {clip.startTime.toFixed(1)}s - {clip.endTime.toFixed(1)}s
+              <span className="text-slate-400 font-mono" data-testid="cut-time-range">
+                {formatTime(clip.startTime)} - {formatTime(clip.endTime)}
               </span>
               <span className="text-slate-600">•</span>
-              <span className="text-brand-emerald font-semibold font-mono">
+              <span className="text-brand-emerald font-semibold font-mono" data-testid="clip-duration-badge">
                 {clip.duration.toFixed(1)}s
               </span>
             </div>

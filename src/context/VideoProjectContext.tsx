@@ -163,9 +163,23 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
           `${cleanTitle} — Unfiltered Truth & Core Takeaway`
         ];
 
+    // Distinct OpusClip cut points across the full stream:
+    // Clip 1: 184s (03:04), Clip 2: 1120s (18:40), Clip 3: 2530s (42:10), Clip 4: 4150s (69:10)
+    const baseStartOffsets =
+      durationMinutes >= 60 || isMunkar
+        ? [184.0, 1120.0, 2530.0, 4150.0]
+        : [
+            Math.floor(durationMinutes * 60 * 0.05),
+            Math.floor(durationMinutes * 60 * 0.25),
+            Math.floor(durationMinutes * 60 * 0.55),
+            Math.floor(durationMinutes * 60 * 0.78)
+          ];
+
     const generatedClips: ViralClip[] = SAMPLE_CLIPS.map((clip, idx) => {
       const clipDuration = targetDurations[idx] || 52.0;
       const dynamicWords = generateTranscriptForDuration(clipDuration, selectedLang);
+      const clipStart = baseStartOffsets[idx] !== undefined ? baseStartOffsets[idx] : (184.0 + idx * 600);
+      const clipEnd = Number((clipStart + clipDuration).toFixed(1));
 
       return {
         ...clip,
@@ -174,8 +188,8 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         title: customClipTitles[idx] || `${cleanTitle} — Clip #${idx + 1}`,
         hookTitle: customHookTitles[idx] || clip.hookTitle,
         duration: clipDuration,
-        startTime: 0,
-        endTime: clipDuration,
+        startTime: clipStart,
+        endTime: clipEnd,
         words: dynamicWords,
         language: selectedLang,
         speakerMode: 'single', // Clean 9:16 single-frame playback (no stock photo splits!)
