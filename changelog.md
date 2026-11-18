@@ -4,6 +4,19 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.0.9] - 2026-11-18
+
+### Real YouTube Video Player Embed & Fresh Modal Mount
+- **Native YouTube Video Playback (`src/components/results/ClipCard.tsx`, `src/components/editor/CanvasStage.tsx`)**:
+  - Replaced fallback sample Chromecast video with embedded native YouTube player iframe (`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1...`).
+  - When playing clips generated from a YouTube URL (like *Munkar 2024*), the actual movie scenes now play directly inside the 9:16 vertical card and studio canvas!
+- **Modal Fresh Mount Cache Fix (`src/App.tsx`)**:
+  - Bound `UploadModal` to `key={initialUrlForModal || 'empty'}` so every newly pasted URL on the landing page forces a completely fresh mount and immediate metadata extraction.
+- **Project Context YouTube Id Association (`src/types/index.ts`, `src/context/VideoProjectContext.tsx`)**:
+  - Added `youtubeId` field to both `VideoProject` and `ViralClip`, decoupling YouTube URL streams from generic `.mp4` video elements.
+
+---
+
 ## [1.0.8] - 2026-11-18
 
 ### YouTube Ingestion Metadata Detection & Creator Studio Workflow Fix

@@ -20,6 +20,7 @@ import {
 
 interface CanvasStageProps {
   videoUrl?: string;
+  youtubeId?: string;
   posterUrl: string;
   currentTime: number;
   duration: number;
@@ -39,6 +40,7 @@ interface CanvasStageProps {
 
 export const CanvasStage: React.FC<CanvasStageProps> = ({
   videoUrl,
+  youtubeId,
   posterUrl,
   currentTime,
   duration,
@@ -172,7 +174,22 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
             </div>
           ) : (
             <div className="relative w-full h-full">
-              {videoUrl ? (
+              {youtubeId ? (
+                isPlaying ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
+                    title="YouTube Studio Stream"
+                    className="w-full h-full object-cover pointer-events-none scale-125"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
+                ) : (
+                  <img
+                    src={posterUrl}
+                    alt="Video Poster"
+                    className="w-full h-full object-cover filter brightness-90"
+                  />
+                )
+              ) : videoUrl ? (
                 <video
                   ref={videoRef}
                   src={videoUrl}

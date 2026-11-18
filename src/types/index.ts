@@ -161,6 +161,7 @@ export interface ViralClip {
   bRollConfig: AutoBRollConfig;
   previewThumbnail: string;
   videoUrl?: string;
+  youtubeId?: string;
   targetPlatform: string[];
 }
 
@@ -169,6 +170,7 @@ export interface VideoProject {
   title: string;
   sourceType: 'local' | 'url';
   sourceUrl?: string;
+  youtubeId?: string;
   durationMinutes: number;
   durationFormatted: string;
   thumbnailUrl: string;

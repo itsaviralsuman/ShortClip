@@ -117,7 +117,22 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           style={{ transform: shouldZoomPunch ? `scale(${clip.autoZoom.zoomScale})` : 'scale(1)' }}
           className="w-full h-full transition-transform duration-300 ease-out origin-center"
         >
-          {clip.videoUrl ? (
+          {clip.youtubeId ? (
+            isPlaying ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${clip.youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${clip.youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
+                title={clip.title}
+                className="w-full h-full object-cover pointer-events-none scale-125"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+            ) : (
+              <img
+                src={clip.previewThumbnail}
+                alt={clip.title}
+                className="w-full h-full object-cover filter brightness-85"
+              />
+            )
+          ) : clip.videoUrl ? (
             <video
               ref={videoRef}
               src={clip.videoUrl}

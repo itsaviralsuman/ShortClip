@@ -100,6 +100,7 @@ const MainApp: React.FC = () => {
       {/* 4. Global Ingestion & Quota Validation Modal */}
       {isUploadModalOpen && (
         <UploadModal
+          key={initialUrlForModal || 'empty'}
           isOpen={isUploadModalOpen}
           initialUrl={initialUrlForModal}
           onClose={() => setIsUploadModalOpen(false)}

@@ -195,6 +195,7 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
         <div className={`flex-1 h-full flex flex-col ${mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'}`}>
           <CanvasStage
             videoUrl={clip.videoUrl}
+            youtubeId={clip.youtubeId}
             posterUrl={clip.previewThumbnail}
             currentTime={currentTime}
             duration={clip.duration}
