@@ -54,7 +54,13 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
     if (isPlaying) {
       interval = setInterval(() => {
         if (videoRef.current) {
-          setCurrentTime(videoRef.current.currentTime);
+          if (videoRef.current.currentTime >= clip.duration || videoRef.current.ended) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.play().catch(() => {});
+            setCurrentTime(0);
+          } else {
+            setCurrentTime(videoRef.current.currentTime);
+          }
         } else {
           setCurrentTime((t) => {
             if (t >= clip.duration) {
@@ -76,6 +82,9 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
       }, 100);
     } else {
       setCurrentTime(0);
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+      }
     }
     return () => clearInterval(interval);
   }, [isPlaying, clip.duration, clip.startTime]);
@@ -85,6 +94,9 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
       if (isPlaying) {
         videoRef.current.pause();
       } else {
+        if (videoRef.current.currentTime >= clip.duration || videoRef.current.ended) {
+          videoRef.current.currentTime = 0;
+        }
         videoRef.current.muted = isMuted;
         videoRef.current.play().catch(() => {});
       }
@@ -175,7 +187,24 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
           style={{ transform: shouldZoomPunch ? `scale(${clip.autoZoom.zoomScale})` : 'scale(1)' }}
           className="w-full h-full transition-transform duration-300 ease-out origin-center"
         >
-          {clip.youtubeId ? (
+          {clip.videoUrl ? (
+            <video
+              ref={videoRef}
+              src={clip.videoUrl}
+              poster={clip.previewThumbnail}
+              muted={isMuted}
+              loop
+              playsInline
+              preload="metadata"
+              className="w-full h-full object-cover"
+              onEnded={() => {
+                if (videoRef.current) {
+                  videoRef.current.currentTime = 0;
+                  videoRef.current.play().catch(() => {});
+                }
+              }}
+            />
+          ) : clip.youtubeId ? (
             isPlaying ? (
               <iframe
                 ref={iframeRef}
@@ -205,16 +234,6 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
                 className="w-full h-full object-cover filter brightness-85"
               />
             )
-          ) : clip.videoUrl ? (
-            <video
-              ref={videoRef}
-              src={clip.videoUrl}
-              poster={clip.previewThumbnail}
-              muted={isMuted}
-              loop
-              playsInline
-              className="w-full h-full object-cover"
-            />
           ) : (
             <img
               src={clip.previewThumbnail}
@@ -232,7 +251,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
         </div>
 
         {/* Dynamic Animated Opus Karaoke Captions — Large, Center-Bottom like OpusClip */}
-        <div className="absolute inset-x-0 bottom-14 sm:bottom-16 z-20 pointer-events-none px-3">
+        <div data-testid="caption-container" className="absolute inset-x-0 bottom-14 sm:bottom-16 z-20 pointer-events-none px-3">
           {/* Semi-transparent backing for readability like OpusClip */}
           <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1 max-w-full">
             {(isPlaying ? chunkWords : clip.words.slice(0, 4)).map((w) => {

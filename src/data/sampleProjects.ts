@@ -1,4 +1,5 @@
 import { VideoProject, ViralClip, TranscriptWord } from '../types';
+import { generateTranscriptForDuration } from './multilingualTranscripts';
 
 export const SAMPLE_PODCAST_WORDS: TranscriptWord[] = [
   { id: 'w1', text: 'Listen,', start: 0.1, end: 0.4, speaker: 'Speaker 1', highlightColor: '#F59E0B' },
@@ -82,7 +83,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       youtubeShorts: 'Why 40 hours of editing is DESTROYING your channel growth 😱 (Watch till end)',
       linkedin: 'Content output is not an art problem; it is a distribution system bottleneck.'
     },
-    words: SAMPLE_PODCAST_WORDS,
+    words: generateTranscriptForDuration(68.4, 'english', 0, 184.0),
     bRollTracks: []
   },
   {
@@ -119,7 +120,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       youtubeShorts: 'How to get 30 chances to go viral EVERY SINGLE DAY ⚡',
       linkedin: 'Operationalizing video production: Turning long-form podcast VODs into modular micro-content.'
     },
-    words: SAMPLE_PODCAST_WORDS,
+    words: generateTranscriptForDuration(75.2, 'english', 1, 1120.0),
     bRollTracks: []
   },
   {
@@ -156,7 +157,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       youtubeShorts: 'The 40-hour editing trap exposed in 5 seconds 💀',
       linkedin: 'Perfectionism is the enemy of volume. Why iteration velocity outpaces craft in digital distribution.'
     },
-    words: SAMPLE_PODCAST_WORDS,
+    words: generateTranscriptForDuration(88.6, 'english', 2, 2530.0),
     bRollTracks: []
   },
   {
@@ -193,7 +194,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       youtubeShorts: 'Algorithmic probability explained in 7 seconds 🧠',
       linkedin: 'Distribution is a probabilistic game. Maximize your surface area of luck.'
     },
-    words: SAMPLE_PODCAST_WORDS,
+    words: generateTranscriptForDuration(104.0, 'english', 3, 4150.0),
     bRollTracks: []
   },
   {
@@ -230,7 +231,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       youtubeShorts: 'From zero to 100K: The real turning point 🔥',
       linkedin: 'Lessons learned scaling audience from first principles.'
     },
-    words: SAMPLE_PODCAST_WORDS,
+    words: generateTranscriptForDuration(72.5, 'english', 4, 540.0),
     bRollTracks: []
   },
   {
@@ -267,7 +268,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       youtubeShorts: 'The execution rule that separates top 1% from the rest ⚡',
       linkedin: 'Building predictable distribution flywheels.'
     },
-    words: SAMPLE_PODCAST_WORDS,
+    words: generateTranscriptForDuration(95.8, 'english', 5, 1820.0),
     bRollTracks: []
   },
   {
@@ -304,7 +305,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       youtubeShorts: 'Curiosity gap mastery for viral shorts 🎯',
       linkedin: 'Cognitive load and retention dynamics in short-form media.'
     },
-    words: SAMPLE_PODCAST_WORDS,
+    words: generateTranscriptForDuration(62.0, 'english', 6, 3240.0),
     bRollTracks: []
   },
   {
@@ -341,7 +342,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
       youtubeShorts: 'Build systems, not videos: The #1 takeaway ⚡',
       linkedin: 'Why operational leverage outlasts individual creative inspiration in digital media.'
     },
-    words: SAMPLE_PODCAST_WORDS,
+    words: generateTranscriptForDuration(81.4, 'english', 7, 4860.0),
     bRollTracks: []
   }
 ];

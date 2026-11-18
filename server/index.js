@@ -85,8 +85,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// In-memory Job / Project Store
+// In-memory Job / Project Store & Transcription Cache
 const jobs = new Map();
+const transcriptCache = new Map();
 
 /**
  * Health check
@@ -178,7 +179,7 @@ app.post('/api/process', async (req, res) => {
     try {
       const job = jobs.get(jobId);
 
-      // Step 1: Discover Candidates
+      // Step 1: Discover Candidates across full source timeline
       const candidates = CandidateService.discoverCandidates({
         videoTitle: title,
         totalDurationSeconds: totalSeconds,
@@ -187,25 +188,65 @@ app.post('/api/process', async (req, res) => {
         clipMode: 'best_moments'
       });
 
-      job.progress = 35;
-      job.stage = 'Transcribing Dialogue with Word-Level Timestamps...';
+      job.progress = 25;
+      job.stage = 'Transcribing Full Source Video Dialogue (Whisper AI)...';
 
-      // Step 2: Render each candidate to a REAL MP4 file
-      const renderedClips = [];
+      // Step 2: Transcribe source audio ONCE (cached by input path for speed)
+      let fullTranscript = null;
+      if (inputVideoPath && fs.existsSync(inputVideoPath)) {
+        if (transcriptCache.has(inputVideoPath)) {
+          fullTranscript = transcriptCache.get(inputVideoPath);
+          console.log(`⚡ Reusing cached full transcript for ${inputVideoPath} (${fullTranscript.length} words)`);
+        } else {
+          try {
+            const baseName = path.basename(inputVideoPath, path.extname(inputVideoPath));
+            const audioPath = path.join(audioDir, `${baseName}.wav`);
+            if (!fs.existsSync(audioPath)) {
+              await FFmpegService.extractAudio(inputVideoPath, audioPath);
+            }
+            fullTranscript = await TranscriptionService.transcribeAudio({
+              audioPath,
+              language,
+              durationSeconds: totalSeconds
+            });
+            if (fullTranscript && fullTranscript.length > 0) {
+              transcriptCache.set(inputVideoPath, fullTranscript);
+            }
+          } catch (transcribeErr) {
+            console.warn('Source audio transcription warning:', transcribeErr.message);
+          }
+        }
+      }
 
-      for (let i = 0; i < candidates.length; i++) {
-        const cand = candidates[i];
+      job.progress = 40;
+      job.stage = `Rendering ${candidates.length} Viral Shorts with Clip-Specific Burned Captions...`;
+
+      // Step 3: Concurrent clip rendering with controlled concurrency (Limit = 3)
+      let completedCount = 0;
+      let cachedProbe = null;
+      if (inputVideoPath && fs.existsSync(inputVideoPath)) {
+        try {
+          cachedProbe = await FFmpegService.probeMedia(inputVideoPath);
+        } catch (pErr) {
+          console.warn('Media probe notice:', pErr.message);
+        }
+      }
+
+      const renderClipWorker = async (cand, i) => {
         const clipId = `clip-${jobId}-${i + 1}`;
         const outputMp4Name = `${clipId}.mp4`;
         const outputMp4Path = path.join(outputsDir, outputMp4Name);
 
-        job.progress = 40 + Math.round((i / candidates.length) * 50);
-        job.stage = `Rendering 9:16 Short MP4 #${i + 1} with Burned Animated Captions (${cand.duration}s)...`;
+        // Derive clip-specific words with clip-local timestamps starting at 0.0s
+        const words = TranscriptionService.getClipWordsFromFullTranscript(
+          fullTranscript,
+          cand.startTime,
+          cand.endTime,
+          i,
+          language
+        );
 
-        // Generate transcript words matching this clip duration & language
-        const words = TranscriptionService.generateAlignedTranscript(cand.duration, language);
-
-        // Generate Opus-style .ass karaoke subtitles file
+        // Generate unique Opus-style .ass karaoke subtitles file for THIS clip
         let subtitlePath = null;
         try {
           subtitlePath = SubtitleService.generateAssFile({
@@ -216,16 +257,14 @@ app.post('/api/process', async (req, res) => {
             videoHeight: 1920
           });
         } catch (subErr) {
-          console.warn('Subtitle file generation warning:', subErr.message);
+          console.warn(`Subtitle file generation warning for ${clipId}:`, subErr.message);
         }
 
-        // If we have a local video file, execute real FFmpeg render with captions
+        // Render MP4 with FFmpeg if local video file exists
         let hasRealRenderedFile = false;
         if (inputVideoPath && fs.existsSync(inputVideoPath)) {
           try {
-            const probe = await FFmpegService.probeMedia(inputVideoPath);
-            const actualDuration = probe.duration || 20;
-            // Ensure start & end are within actual video duration
+            const actualDuration = cachedProbe?.duration || 20;
             const sliceStart = Math.min(cand.startTime, Math.max(0, actualDuration - 4));
             const sliceDuration = Math.min(cand.duration, Math.max(2, actualDuration - sliceStart));
             const sliceEnd = sliceStart + sliceDuration;
@@ -244,11 +283,15 @@ app.post('/api/process', async (req, res) => {
           }
         }
 
+        completedCount++;
+        job.progress = 40 + Math.round((completedCount / candidates.length) * 55);
+        job.stage = `Rendered ${completedCount}/${candidates.length} Shorts (${cand.title})...`;
+
         const videoUrl = hasRealRenderedFile
           ? `http://localhost:${PORT}/outputs/${outputMp4Name}`
           : undefined;
 
-        renderedClips.push({
+        return {
           id: clipId,
           projectId: jobId,
           title: cand.title,
@@ -300,8 +343,28 @@ app.post('/api/process', async (req, res) => {
             kenBurnsTransition: true
           },
           bRollTracks: []
-        });
-      }
+        };
+      };
+
+      // Run up to 3 concurrent renders for 3x speedup
+      const runWithConcurrency = async (items, workerFn, concurrency = 3) => {
+        const results = new Array(items.length);
+        const executing = new Set();
+        for (let i = 0; i < items.length; i++) {
+          const p = Promise.resolve().then(() => workerFn(items[i], i)).then(res => {
+            results[i] = res;
+            executing.delete(p);
+          });
+          executing.add(p);
+          if (executing.size >= concurrency) {
+            await Promise.race(executing);
+          }
+        }
+        await Promise.all(executing);
+        return results;
+      };
+
+      const renderedClips = await runWithConcurrency(candidates, renderClipWorker, 3);
 
       job.status = 'completed';
       job.progress = 100;

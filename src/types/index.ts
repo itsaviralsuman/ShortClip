@@ -115,8 +115,10 @@ export interface ViralityBreakdown {
 export interface TranscriptWord {
   id: string;
   text: string;
-  start: number; // seconds (e.g. 0.45)
-  end: number;   // seconds (e.g. 0.85)
+  start: number; // seconds (e.g. 0.45) - clip-local timestamp (starts at 0)
+  end: number;   // seconds (e.g. 0.85) - clip-local timestamp
+  sourceStart?: number; // absolute source video timeline start
+  sourceEnd?: number;   // absolute source video timeline end
   speaker: string; // 'Speaker 1' | 'Speaker 2'
   isFiller?: boolean; // 'um', 'uh', 'like', 'you know'
   isDeleted?: boolean; // edited out by user in doc-style editor

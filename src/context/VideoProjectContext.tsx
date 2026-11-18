@@ -236,7 +236,10 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const clipStart = Math.floor(maxStart * startRatio);
         const clipEnd = Number((clipStart + clipDuration).toFixed(1));
 
-        const words = generateTranscriptForDuration(clipDuration, selectedLang);
+        const backendClip = backendJobData?.clips?.[i];
+        const words = (backendClip?.words && backendClip.words.length > 0)
+          ? backendClip.words
+          : generateTranscriptForDuration(clipDuration, selectedLang, i, clipStart);
 
         generatedClips.push({
           id: `clip-${newProjectId}-${i + 1}`,
@@ -253,9 +256,9 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
           captionTemplateId: config?.captionTemplateId || 'hormozi-yellow',
           previewThumbnail: finalThumb,
           youtubeId: ytId || undefined,
-          videoUrl: ytId ? undefined : (backendJobData?.clips?.[i]?.videoUrl),
-          downloadUrl: `http://localhost:3001/api/clips/clip-${newProjectId}-${i + 1}/download`,
-          renderedFile: null,
+          videoUrl: backendClip?.videoUrl || undefined,
+          downloadUrl: backendClip?.downloadUrl || `http://localhost:3001/api/clips/clip-${newProjectId}-${i + 1}/download`,
+          renderedFile: backendClip?.renderedFile || null,
           targetPlatform: ['tiktok', 'reels', 'shorts'],
           virality: {
             overallScore: Math.floor(91 + ((i * 3 + 5) % 8)),
