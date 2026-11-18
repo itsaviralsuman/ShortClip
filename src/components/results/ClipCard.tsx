@@ -225,36 +225,38 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
           </div>
         </div>
 
-        {/* Dynamic Animated Opus Karaoke Captions */}
-        <div className="absolute inset-x-2 bottom-12 sm:bottom-14 z-20 pointer-events-none text-center px-1">
-          <div className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 max-w-full">
-            {chunkWords.map((w) => {
-              const isActive = activeWord?.id === w.id;
+        {/* Dynamic Animated Opus Karaoke Captions — Large, Center-Bottom like OpusClip */}
+        <div className="absolute inset-x-0 bottom-14 sm:bottom-16 z-20 pointer-events-none px-3">
+          {/* Semi-transparent backing for readability like OpusClip */}
+          <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1 max-w-full">
+            {(isPlaying ? chunkWords : clip.words.slice(0, 4)).map((w) => {
+              const isActive = isPlaying && activeWord?.id === w.id;
               return (
                 <span key={w.id} className="relative inline-flex flex-col items-center">
                   {/* AI Emoji Above Active Word */}
                   {clip.emojiConfig?.enabled && clip.emojiConfig.position === 'above' && w.emoji && isActive && (
-                    <span className="absolute -top-6 text-lg sm:text-xl animate-bounce z-30">
+                    <span className="absolute -top-7 text-xl sm:text-2xl animate-bounce z-30">
                       {w.emoji}
                     </span>
                   )}
 
                   <span
                     style={{
-                      fontFamily: tpl.fontFamily,
-                      color: isActive ? tpl.activeWordColor : tpl.textColor,
-                      textShadow: tpl.textShadow,
-                      backgroundColor: isActive && tpl.backgroundColor ? tpl.backgroundColor : 'transparent'
+                      fontFamily: tpl.fontFamily || 'Montserrat, sans-serif',
+                      color: isActive ? (tpl.activeWordColor || '#FACC15') : (tpl.textColor || '#FFFFFF'),
+                      textShadow: tpl.textShadow || '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 4px 12px rgba(0,0,0,0.95)',
+                      backgroundColor: isActive && tpl.backgroundColor ? tpl.backgroundColor : 'transparent',
+                      lineHeight: 1.1
                     }}
-                    className={`font-black ${tpl.textTransform} transition-all duration-100 ${
+                    className={`font-black uppercase transition-all duration-100 drop-shadow-2xl ${
                       isActive
-                        ? 'scale-110 text-base sm:text-lg px-1 py-0.5 rounded drop-shadow-xl z-10'
-                        : 'scale-100 text-xs sm:text-sm opacity-90'
+                        ? 'scale-115 text-lg sm:text-xl lg:text-2xl px-1.5 py-0.5 rounded-md z-10'
+                        : 'scale-100 text-base sm:text-lg lg:text-xl opacity-95'
                     }`}
                   >
                     {w.text}
                     {clip.emojiConfig?.enabled && clip.emojiConfig.position === 'inline' && w.emoji && isActive && (
-                      <span className="ml-0.5 text-xs">{w.emoji}</span>
+                      <span className="ml-1 text-sm">{w.emoji}</span>
                     )}
                   </span>
                 </span>

@@ -97,51 +97,50 @@ export class FFmpegService {
   }
 
   /**
-   * Render real 9:16 Vertical Short MP4 with 1080x1920 blurred-background reframing
+   * Render real Short MP4 with reframing (9:16, 1:1, 16:9, 4:5) & burned captions
    */
-  static renderClip({ inputPath, outputPath, startTime, endTime, aspectRatio = '9:16' }) {
+  static renderClip({ inputPath, outputPath, startTime, endTime, aspectRatio = '9:16', subtitlePath }) {
     return new Promise((resolve, reject) => {
       const duration = Math.max(1, endTime - startTime);
       const safeStart = Math.max(0, startTime);
 
       let args = ['-y', '-ss', safeStart.toString(), '-t', duration.toString(), '-i', inputPath];
 
-      if (aspectRatio === '9:16') {
-        // High-speed dual-layer 9:16 vertical short:
-        // [bg]: scale to fill 1080x1920, crop, boxblur
-        // [fg]: scale width to 1080, height automatically even (-2)
-        // [overlay]: center foreground on top of blurred background
-        const filterGraph = [
-          '[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=15:3[bg]',
-          '[0:v]scale=1080:-2[fg]',
-          '[bg][fg]overlay=(W-w)/2:(H-h)/2[outv]'
-        ].join(';');
-
-        args.push(
-          '-filter_complex', filterGraph,
-          '-map', '[outv]',
-          '-map', '0:a?',
-          '-c:v', 'libx264',
-          '-preset', 'ultrafast',
-          '-crf', '23',
-          '-pix_fmt', 'yuv420p',
-          '-c:a', 'aac',
-          '-b:a', '128k',
-          '-movflags', '+faststart',
-          outputPath
-        );
-      } else {
-        args.push(
-          '-c:v', 'libx264',
-          '-preset', 'ultrafast',
-          '-crf', '23',
-          '-pix_fmt', 'yuv420p',
-          '-c:a', 'aac',
-          '-b:a', '128k',
-          '-movflags', '+faststart',
-          outputPath
-        );
+      // Format subtitle path for FFmpeg on Windows: C\:/path/to/sub.ass
+      let subFilter = '';
+      if (subtitlePath && fs.existsSync(subtitlePath)) {
+        const escapedSub = subtitlePath.replace(/\\/g, '/').replace(':', '\\:');
+        subFilter = `,subtitles='${escapedSub}'`;
       }
+
+      let filterGraph = '';
+      if (aspectRatio === '9:16') {
+        // 1080x1920 Vertical Mobile Short
+        filterGraph = `[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=15:3[bg];[0:v]scale=1080:-2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2${subFilter}[outv]`;
+      } else if (aspectRatio === '1:1') {
+        // 1080x1080 Square Feed
+        filterGraph = `[0:v]scale=1080:1080:force_original_aspect_ratio=increase,crop=1080:1080,boxblur=15:3[bg];[0:v]scale=1080:-2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2${subFilter}[outv]`;
+      } else if (aspectRatio === '4:5') {
+        // 1080x1350 Portrait
+        filterGraph = `[0:v]scale=1080:1350:force_original_aspect_ratio=increase,crop=1080:1350,boxblur=15:3[bg];[0:v]scale=1080:-2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2${subFilter}[outv]`;
+      } else {
+        // 16:9 Landscape / Default
+        filterGraph = subFilter ? `[0:v]null${subFilter}[outv]` : `[0:v]null[outv]`;
+      }
+
+      args.push(
+        '-filter_complex', filterGraph,
+        '-map', '[outv]',
+        '-map', '0:a?',
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-crf', '23',
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-movflags', '+faststart',
+        outputPath
+      );
 
       const proc = spawn(FFMPEG_BIN, args);
       let stderr = '';
@@ -149,14 +148,17 @@ export class FFmpegService {
 
       proc.on('close', code => {
         if (code === 0 && fs.existsSync(outputPath)) {
-          const stats = fs.statSync(outputPath);
-          resolve({
-            outputPath,
-            sizeBytes: stats.size,
-            duration
-          });
+          resolve({ outputPath, duration });
         } else {
-          reject(new Error(`FFmpeg render failed with code ${code}: ${stderr}`));
+          // If subtitle filter failed (e.g. font missing), retry without subtitle filter
+          if (subFilter) {
+            console.warn('Retrying render without subtitle filter...');
+            this.renderClip({ inputPath, outputPath, startTime, endTime, aspectRatio, subtitlePath: null })
+              .then(resolve)
+              .catch(reject);
+          } else {
+            reject(new Error(`FFmpeg render failed with code ${code}: ${stderr}`));
+          }
         }
       });
     });

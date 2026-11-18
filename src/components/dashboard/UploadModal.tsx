@@ -13,6 +13,7 @@ import {
 import { useQuota } from '../../context/QuotaContext';
 import { MAX_SINGLE_VIDEO_MINUTES } from '../../utils/quotaEngine';
 import { ConfigModal } from './ConfigModal';
+import { OpusIngestionPanel } from '../opus/OpusIngestionPanel';
 import { AIProcessingConfig } from '../../types';
 import { fetchVideoMetadata, extractYouTubeId } from '../../utils/youtubeHelper';
 
@@ -394,15 +395,24 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         </div>
       </div>
 
-      {/* AI Processing Configuration Modal */}
+      {/* Opus.pro Multi-Modal Video Repurposing Studio Configuration */}
       {isConfigOpen && (
-        <ConfigModal
-          isOpen={isConfigOpen}
-          onClose={() => setIsConfigOpen(false)}
-          onConfirm={handleConfigConfirmed}
-          videoTitle={currentTitle}
-          videoDurationMinutes={currentDuration}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-4xl max-h-[94vh] overflow-y-auto">
+            <OpusIngestionPanel
+              videoTitle={currentTitle}
+              durationMinutes={currentDuration}
+              thumbnailUrl={
+                urlThumbnail ||
+                (extractYouTubeId(videoUrl)
+                  ? `https://i.ytimg.com/vi/${extractYouTubeId(videoUrl)}/hqdefault.jpg`
+                  : 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800&auto=format&fit=crop&q=80')
+              }
+              onConfirm={handleConfigConfirmed}
+              onCancel={() => setIsConfigOpen(false)}
+            />
+          </div>
+        </div>
       )}
     </>
   );

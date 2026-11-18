@@ -45,9 +45,13 @@ const MainApp: React.FC = () => {
     config?: any,
     thumbnailUrl?: string
   ) => {
-    // Navigate immediately to Creator Studio (dashboard) so the user sees real-time AI progress
+    // Navigate to Creator Studio (dashboard) so the user sees real-time AI progress
     setActiveTab('dashboard');
-    createNewProjectFromInput(title, durationMinutes, sourceType, sourceUrl, config, thumbnailUrl);
+    // Await processing completion, then auto-navigate to Viral Clips tab
+    createNewProjectFromInput(title, durationMinutes, sourceType, sourceUrl, config, thumbnailUrl).then(() => {
+      // Small delay so the user sees "Processing Complete" banner briefly before navigating
+      setTimeout(() => setActiveTab('clips'), 1200);
+    });
   };
 
   const handleHeroUrlSubmit = (url: string) => {

@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { FFmpegService } from './services/ffmpegService.js';
 import { TranscriptionService } from './services/transcriptionService.js';
 import { CandidateService } from './services/candidateService.js';
+import { SubtitleService } from './services/subtitleService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -163,9 +164,26 @@ app.post('/api/process', async (req, res) => {
         const outputMp4Path = path.join(outputsDir, outputMp4Name);
 
         job.progress = 40 + Math.round((i / candidates.length) * 50);
-        job.stage = `Rendering 9:16 Short MP4 #${i + 1} with FFmpeg (${cand.duration}s)...`;
+        job.stage = `Rendering 9:16 Short MP4 #${i + 1} with Burned Animated Captions (${cand.duration}s)...`;
 
-        // If we have a local video file, execute real FFmpeg render
+        // Generate transcript words matching this clip duration & language
+        const words = TranscriptionService.generateAlignedTranscript(cand.duration, language);
+
+        // Generate Opus-style .ass karaoke subtitles file
+        let subtitlePath = null;
+        try {
+          subtitlePath = SubtitleService.generateAssFile({
+            clipId,
+            words,
+            templateId: config.captionTemplateId || 'hormozi-yellow',
+            videoWidth: 1080,
+            videoHeight: 1920
+          });
+        } catch (subErr) {
+          console.warn('Subtitle file generation warning:', subErr.message);
+        }
+
+        // If we have a local video file, execute real FFmpeg render with captions
         let hasRealRenderedFile = false;
         if (inputVideoPath && fs.existsSync(inputVideoPath)) {
           try {
@@ -181,16 +199,14 @@ app.post('/api/process', async (req, res) => {
               outputPath: outputMp4Path,
               startTime: sliceStart,
               endTime: sliceEnd,
-              aspectRatio: '9:16'
+              aspectRatio: config.aspectRatio || '9:16',
+              subtitlePath
             });
             hasRealRenderedFile = true;
           } catch (renderErr) {
             console.warn(`FFmpeg render for clip #${i + 1} failed:`, renderErr.message);
           }
         }
-
-        // Generate transcript words matching this clip duration & language
-        const words = TranscriptionService.generateAlignedTranscript(cand.duration, language);
 
         const videoUrl = hasRealRenderedFile
           ? `http://localhost:${PORT}/outputs/${outputMp4Name}`

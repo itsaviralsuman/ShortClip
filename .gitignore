@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+server/node_modules
 dist
 dist-ssr
 *.local
@@ -19,6 +20,8 @@ server/outputs/*
 !server/outputs/.gitkeep
 server/audio/*
 !server/audio/.gitkeep
+server/subtitles/*
+!server/subtitles/.gitkeep
 
 # Editor directories and files
 .vscode/*
