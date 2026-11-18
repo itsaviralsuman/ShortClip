@@ -44,11 +44,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     durationMinutes: number,
     sourceType: 'local' | 'url',
     sourceUrl?: string,
-    config?: any
+    config?: any,
+    thumbnailUrl?: string
   ) => {
-    createNewProjectFromInput(title, durationMinutes, sourceType, sourceUrl, config).then(() => {
-      onViewClips();
-    });
+    createNewProjectFromInput(title, durationMinutes, sourceType, sourceUrl, config, thumbnailUrl);
   };
 
   return (
@@ -108,6 +107,41 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
       {/* 4. Creator Projects Grid */}
       <section className="space-y-4">
+        {/* Active Project Ready Banner */}
+        {activeProject && !isProcessingNew && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/60 to-indigo-950/60 border border-purple-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl animate-fade-in">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-14 aspect-video rounded-xl overflow-hidden bg-black shrink-0 border border-purple-500/30">
+                <img src={activeProject.thumbnailUrl} alt={activeProject.title} className="w-full h-full object-cover" />
+              </div>
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold uppercase mb-0.5">
+                  <CheckCircle className="w-3 h-3" />
+                  <span>Processing Complete • {activeProject.clipsCount} Viral Shorts Ready</span>
+                </div>
+                <h3 className="text-sm font-bold text-white truncate">{activeProject.title}</h3>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <button
+                onClick={onViewClips}
+                className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-500/30 flex items-center justify-center gap-1.5 transition active:scale-95"
+              >
+                <Flame className="w-3.5 h-3.5 text-yellow-300" />
+                <span>View Viral Clips ({activeProject.clipsCount}) →</span>
+              </button>
+              <button
+                onClick={onOpenStudio}
+                className="px-3.5 py-2 rounded-xl bg-studio-800 hover:bg-studio-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+              >
+                <Scissors className="w-3.5 h-3.5 text-brand-emerald" />
+                <span>Studio</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-white flex items-center gap-2">

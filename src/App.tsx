@@ -42,11 +42,12 @@ const MainApp: React.FC = () => {
     durationMinutes: number,
     sourceType: 'local' | 'url',
     sourceUrl?: string,
-    config?: any
+    config?: any,
+    thumbnailUrl?: string
   ) => {
-    createNewProjectFromInput(title, durationMinutes, sourceType, sourceUrl, config).then(() => {
-      setActiveTab('clips');
-    });
+    // Navigate immediately to Creator Studio (dashboard) so the user sees real-time AI progress
+    setActiveTab('dashboard');
+    createNewProjectFromInput(title, durationMinutes, sourceType, sourceUrl, config, thumbnailUrl);
   };
 
   const handleHeroUrlSubmit = (url: string) => {

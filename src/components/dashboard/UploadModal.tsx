@@ -14,6 +14,7 @@ import { useQuota } from '../../context/QuotaContext';
 import { MAX_SINGLE_VIDEO_MINUTES } from '../../utils/quotaEngine';
 import { ConfigModal } from './ConfigModal';
 import { AIProcessingConfig } from '../../types';
+import { fetchVideoMetadata, extractYouTubeId } from '../../utils/youtubeHelper';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -23,7 +24,8 @@ interface UploadModalProps {
     durationMinutes: number,
     sourceType: 'local' | 'url',
     sourceUrl?: string,
-    config?: Partial<AIProcessingConfig>
+    config?: Partial<AIProcessingConfig>,
+    thumbnailUrl?: string
   ) => void;
   initialUrl?: string;
 }
@@ -40,6 +42,25 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const [videoUrl, setVideoUrl] = useState<string>(initialUrl);
   const [urlTitle, setUrlTitle] = useState<string>('Founder Scale & AI Systems Stream');
   const [urlDuration, setUrlDuration] = useState<number>(60); // minutes
+  const [urlThumbnail, setUrlThumbnail] = useState<string>('');
+  const [urlAuthor, setUrlAuthor] = useState<string>('');
+  const [isFetchingMeta, setIsFetchingMeta] = useState<boolean>(false);
+
+  // Auto-detect and fetch YouTube metadata (title, thumbnail, duration)
+  React.useEffect(() => {
+    if (videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'))) {
+      setIsFetchingMeta(true);
+      fetchVideoMetadata(videoUrl).then((meta) => {
+        if (meta.title) setUrlTitle(meta.title);
+        if (meta.thumbnail) setUrlThumbnail(meta.thumbnail);
+        if (meta.author) setUrlAuthor(meta.author);
+        if (meta.durationMinutes) setUrlDuration(meta.durationMinutes);
+        setIsFetchingMeta(false);
+      }).catch(() => {
+        setIsFetchingMeta(false);
+      });
+    }
+  }, [videoUrl]);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [localFileDuration, setLocalFileDuration] = useState<number | null>(null);
@@ -52,6 +73,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     duration: number;
     sourceType: 'local' | 'url';
     sourceUrl?: string;
+    thumbnailUrl?: string;
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,7 +124,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
       title: currentTitle,
       duration: currentDuration,
       sourceType: activeTab,
-      sourceUrl: activeTab === 'url' ? videoUrl : undefined
+      sourceUrl: activeTab === 'url' ? videoUrl : undefined,
+      thumbnailUrl: activeTab === 'url' ? urlThumbnail : undefined
     });
     setIsConfigOpen(true);
   };
@@ -133,7 +156,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
       pendingUploadData.duration,
       pendingUploadData.sourceType,
       pendingUploadData.sourceUrl,
-      config
+      config,
+      pendingUploadData.thumbnailUrl
     );
   };
 
@@ -229,8 +253,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             ) : (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Video URL
+                  <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
+                    <span>Video URL</span>
+                    {isFetchingMeta && (
+                      <span className="text-[10px] text-purple-400 font-mono animate-pulse">
+                        Detecting YouTube Video Metadata...
+                      </span>
+                    )}
                   </label>
                   <input
                     type="text"
@@ -239,6 +268,26 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                     placeholder="YouTube, Twitch, Rumble, Loom, Zoom, Vimeo..."
                     className="w-full px-3 py-2 rounded-xl bg-studio-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:border-brand-purple outline-none"
                   />
+
+                  {/* YouTube Live Detected Preview */}
+                  {urlThumbnail && (
+                    <div className="mt-2.5 p-2.5 rounded-xl bg-studio-950/80 border border-purple-500/30 flex items-center gap-3 animate-fade-in">
+                      <div className="relative w-20 aspect-video rounded-lg overflow-hidden bg-black shrink-0">
+                        <img src={urlThumbnail} alt="Preview" className="w-full h-full object-cover" />
+                        <span className="absolute bottom-0.5 right-0.5 px-1 rounded bg-black/80 text-[8px] font-mono text-white">
+                          HD
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-emerald-400 uppercase">
+                          <CheckCircle className="w-3 h-3" />
+                          <span>YouTube Ingestion Verified</span>
+                        </div>
+                        <div className="text-xs font-bold text-white truncate mt-0.5">{urlTitle}</div>
+                        {urlAuthor && <div className="text-[10px] text-slate-400 truncate">{urlAuthor}</div>}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>

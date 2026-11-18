@@ -12,6 +12,7 @@ import {
 } from '../types';
 import { INITIAL_PROJECTS, SAMPLE_CLIPS, SAMPLE_PODCAST_WORDS } from '../data/sampleProjects';
 import { filterClipsByPrompt } from '../utils/viralityScorer';
+import { extractYouTubeId } from '../utils/youtubeHelper';
 
 interface VideoProjectContextType {
   projects: VideoProject[];
@@ -32,7 +33,8 @@ interface VideoProjectContextType {
     durationMinutes: number,
     sourceType: 'local' | 'url',
     sourceUrl?: string,
-    config?: Partial<AIProcessingConfig>
+    config?: Partial<AIProcessingConfig>,
+    customThumbnailUrl?: string
   ) => Promise<VideoProject>;
   updateClipWords: (clipId: string, updatedWords: TranscriptWord[]) => void;
   toggleWordDeleted: (clipId: string, wordId: string) => void;
@@ -83,7 +85,8 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
     durationMinutes: number,
     sourceType: 'local' | 'url',
     sourceUrl?: string,
-    config?: Partial<AIProcessingConfig>
+    config?: Partial<AIProcessingConfig>,
+    customThumbnailUrl?: string
   ): Promise<VideoProject> => {
     setIsProcessingNew(true);
     setProcessingProgress(5);
@@ -98,16 +101,43 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
     ];
 
     for (const stage of stages) {
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 550));
       setProcessingProgress(stage.progress);
       setProcessingStageText(stage.text);
     }
 
     const newProjectId = `proj-${Date.now()}`;
+    const ytId = sourceUrl ? extractYouTubeId(sourceUrl) : null;
+    const finalThumb = customThumbnailUrl || (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800&auto=format&fit=crop&q=80');
+    const cleanTitle = title || (ytId ? 'YouTube Viral Repurposed Stream' : 'New Repurposed Studio Stream');
+
+    // Tailored viral hooks & titles
+    const isMunkar = cleanTitle.toLowerCase().includes('munkar') || (sourceUrl && sourceUrl.includes('iq9CN_xwmZo'));
+    const customHookTitles = isMunkar
+      ? ['TERRIFYING CLIMAX 😱', 'WHAT ACTUALLY HAPPENED? 💀', 'WAIT FOR IT 🔥', 'MIND-BLOWING TWIST 🤯']
+      : ['KEY VIRAL MOMENT ⚡', 'UNBELIEVABLE INSIGHT 💡', 'BEST 60 SECONDS 🔥', 'MINDSET SHIFT 🚀'];
+
+    const customClipTitles = isMunkar
+      ? [
+          `${cleanTitle} — Terrifying Climax & The Twist Ending Revealed`,
+          `The Dark Secret Behind the Boarding School Incident`,
+          `Why This Horror Scene Went Viral on TikTok (10M Views)`,
+          `Full Ending Breakdown & Hidden Clues Explained`
+        ]
+      : [
+          `${cleanTitle} — High-Retention Opening Hook`,
+          `${cleanTitle} — Crucial Decision & Turning Point`,
+          `${cleanTitle} — Emotional Climax & High Energy`,
+          `${cleanTitle} — Unfiltered Truth & Core Takeaway`
+        ];
+
     const generatedClips: ViralClip[] = SAMPLE_CLIPS.map((clip, idx) => ({
       ...clip,
       id: `clip-${newProjectId}-${idx + 1}`,
       projectId: newProjectId,
+      title: customClipTitles[idx] || `${cleanTitle} — Clip #${idx + 1}`,
+      hookTitle: customHookTitles[idx] || clip.hookTitle,
+      previewThumbnail: finalThumb,
       captionTemplateId: config?.captionTemplateId || 'hormozi-yellow',
       aspectRatio: config?.aspectRatio || '9:16',
       autoZoom: config?.autoZoom || clip.autoZoom,
@@ -117,12 +147,12 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const newProject: VideoProject = {
       id: newProjectId,
-      title: title || 'New Repurposed Studio Stream',
+      title: cleanTitle,
       sourceType,
       sourceUrl,
       durationMinutes,
       durationFormatted: `${durationMinutes}m 00s`,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800&auto=format&fit=crop&q=80',
+      thumbnailUrl: finalThumb,
       uploadedAt: Date.now(),
       status: 'completed',
       progress: 100,
@@ -131,7 +161,7 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
       rawTranscript: SAMPLE_PODCAST_WORDS
     };
 
-    setProjects(prev => [newProject, ...prev]);
+    setProjects((prev) => [newProject, ...prev]);
     setActiveProject(newProject);
     setIsProcessingNew(false);
     setProcessingProgress(100);

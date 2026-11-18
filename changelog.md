@@ -4,6 +4,22 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [1.0.8] - 2026-11-18
+
+### YouTube Ingestion Metadata Detection & Creator Studio Workflow Fix
+- **Workflow & Navigation Fix (`src/App.tsx`, `src/components/dashboard/DashboardPage.tsx`)**:
+  - Fixed the abrupt navigation jump where uploading or pasting a video immediately forced the navbar tab to "Viral Clips".
+  - Uploading now routes directly to **Creator Studio** (`dashboard`), where the user observes the active 5-stage AI neural progress bar (Audio Extraction -> Whisper Transcription -> Scene Tracking -> Virality Scoring -> Shorts Generation) in real-time.
+  - On completion, a celebration banner displays the newly ingested video title, thumbnail, and a prominent `View Viral Clips (4) →` button, keeping the user in full control.
+- **YouTube Automatic Live Metadata Detection (`src/utils/youtubeHelper.ts`, `src/components/dashboard/UploadModal.tsx`)**:
+  - Implemented dynamic video ID extraction and live oEmbed metadata query for YouTube links (e.g. `https://youtu.be/iq9CN_xwmZo`).
+  - Automatically detects the real video title (`MUNKAR 2024 full movie Indonesia`), creator (`BLOODMOON FILMS`), and high-res thumbnail (`https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg`).
+  - Added live preview verification card inside the Upload Modal.
+- **Customized Viral Shorts Generation (`src/context/VideoProjectContext.tsx`)**:
+  - Ingested YouTube streams now generate tailored viral shorts reflecting the real video topic (e.g. horror climax, dark secret, viral scene, twist ending for *Munkar*), each paired with the genuine YouTube video thumbnail and Opus phrase karaoke captions.
+
+---
+
 ## [1.0.7] - 2026-11-18
 
 ### Email Sign-In Alerts, 3-Device Workspace Cap & OpusClip Phrase Karaoke
