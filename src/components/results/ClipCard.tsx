@@ -93,17 +93,27 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio }) => {
     }
   };
 
-  const handleExportHD = () => {
+  const handleExportHD = async () => {
     setIsExporting(true);
-    setTimeout(() => {
-      setIsExporting(false);
+    try {
+      const downloadTarget = clip.downloadUrl || `http://localhost:3001/api/clips/${clip.id}/download`;
+      const link = document.createElement('a');
+      link.href = downloadTarget;
+      link.setAttribute('download', `${clip.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.mp4`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
       confetti({
-        particleCount: 80,
-        spread: 60,
+        particleCount: 90,
+        spread: 70,
         origin: { y: 0.7 }
       });
-      alert(`Export Complete! "${clip.title}" rendered at 1080x1920 (60fps) with ${tpl.name} captions, dynamic Auto-Zoom & AI Emojis.`);
-    }, 1500);
+    } catch (e) {
+      console.error('Download error:', e);
+    } finally {
+      setTimeout(() => setIsExporting(false), 1200);
+    }
   };
 
   const handleCopyCaption = (text: string) => {

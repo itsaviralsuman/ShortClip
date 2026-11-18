@@ -3,7 +3,7 @@
 ## System Configuration
 - **Active Skill**: `senior-multi-agent-squad` (Antigravity and Gemini Skill Plugin)
 - **Framework Status**: Persistent Active Mode (Default ON)
-- **Current Version**: `v1.2.0` (OpusClip Stream Cuts [03:04, 18:40, 42:10, 69:10], Audible Sound Controls, CanvasStage Cut Sync & Playwright Verification)
+- **Current Version**: `v2.0.0` (Milestone 1: Real FFmpeg AI Video Processing Backend, Audio Extraction, Real 9:16 MP4 Rendering & Download Pipeline)
 - **Current Attempt**: `attempt = 1` of `max_retries = 3`
 
 ## Squad Hierarchy & Roles

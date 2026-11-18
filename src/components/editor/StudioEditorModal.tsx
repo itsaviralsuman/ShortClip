@@ -74,15 +74,25 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
 
   const handleExport = () => {
     setIsExporting(true);
-    setTimeout(() => {
-      setIsExporting(false);
+    try {
+      const downloadTarget = clip.downloadUrl || `http://localhost:3001/api/clips/${clip.id}/download`;
+      const link = document.createElement('a');
+      link.href = downloadTarget;
+      link.setAttribute('download', `${clip.title.replace(/[^a-zA-Z0-9_-]/g, '_')}_master.mp4`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
       });
-      alert(`Master Export Rendered! 1080x1920 (9:16) file with ${clip.captionTemplateId.toUpperCase()} template, dynamic Auto-Zoom, and AI Emojis ready for TikTok & Shorts.`);
-    }, 1800);
+    } catch (e) {
+      console.error('Download error:', e);
+    } finally {
+      setTimeout(() => setIsExporting(false), 1500);
+    }
   };
 
   return (

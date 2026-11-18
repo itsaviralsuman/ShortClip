@@ -4,6 +4,37 @@ All notable changes and architectural updates executed by the Senior Multi-Agent
 
 ---
 
+## [2.0.0] - 2026-11-18
+
+### Milestone 1: Real FFmpeg AI Video Processing Backend, Audio Extraction & MP4 Rendering
+- **Full Architecture Documentation (`docs/PROJECT_AUDIT.md`, `docs/AI_VIDEO_ARCHITECTURE.md`, `docs/IMPLEMENTATION_ROADMAP.md`)**:
+  - Authored comprehensive project audit analyzing frontend, missing backend, mock timers, and lack of valid file rendering.
+  - Designed complete multimodal video understanding architecture (Audio, Transcript, Visual, 11-dimension candidate matrix, 9:16 FFmpeg blur-padding, job queue).
+  - Outlined a 4-milestone execution plan from raw pipeline implementation to enterprise quota scaling.
+- **Node.js + Express Video Processing Backend (`server/index.js`)**:
+  - Implemented standalone backend server running on port 3001 with static streaming for rendered MP4 files (`/outputs`).
+  - Added endpoints:
+    - `GET /api/health`: Health probe reporting engine status and binary availability.
+    - `POST /api/upload`: Multipart video file upload handler with media probe.
+    - `POST /api/process`: End-to-end pipeline coordinator (probe -> transcribe -> candidate discovery -> FFmpeg 9:16 rendering).
+    - `GET /api/jobs/:id`: Real-time job progress polling.
+    - `GET /api/clips/:clipId/download`: Real `.mp4` file download endpoint with `Content-Disposition: attachment`.
+- **Native FFmpeg & FFprobe Service (`server/services/ffmpegService.js`)**:
+  - Integrated static `@ffmpeg-installer/ffmpeg` and `@ffprobe-installer/ffprobe` binaries for cross-platform execution.
+  - Implemented `probeMedia()`: Extracts container format, duration, codecs, bitrate, fps, and dimensions.
+  - Implemented `extractAudio()`: Extracts 16kHz mono PCM WAV audio for speech-to-text.
+  - Implemented `renderClip()`: Slices exact start/end timestamps and applies high-speed dual-layer 9:16 vertical shorts filter (`[0:v]scale=1080:1920...,crop=1080:1920,boxblur=15:3[bg];[0:v]scale=1080:-2[fg];[bg][fg]overlay...`).
+  - Produces genuine, downloadable H.264/AAC `.mp4` video files.
+- **Speech Transcription & Candidate Discovery Engines (`server/services/transcriptionService.js`, `server/services/candidateService.js`)**:
+  - Real word-level timestamp alignment supporting Hindi, English, and Hinglish vocabularies.
+  - Semantic moment discovery evaluating 11 quality dimensions (Hook Strength, Story Completeness, Watchability, Engagement, Pacing, Info Value, Penalties for stumbles/cuts).
+  - Enforced quality gate rejecting candidates scoring below 65.
+- **Frontend Real Export & Download Integration (`src/context/VideoProjectContext.tsx`, `src/components/results/ClipCard.tsx`, `src/components/editor/StudioEditorModal.tsx`)**:
+  - `createNewProjectFromInput` connects directly to `http://localhost:3001/api/process`, polling real progress and receiving rendered MP4 paths.
+  - Upgraded "Export HD" and "Export 1080p" buttons in ClipCard and Studio Editor to trigger actual browser file downloads of the rendered `.mp4` video files.
+
+---
+
 ## [1.2.0] - 2026-11-18
 
 ### OpusClip Benchmark: Stream Cut Points, Distinct Timestamps, Audible Audio & Studio Synchronization

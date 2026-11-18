@@ -164,6 +164,8 @@ export interface ViralClip {
   bRollConfig: AutoBRollConfig;
   previewThumbnail: string;
   videoUrl?: string;
+  downloadUrl?: string;
+  renderedFile?: string | null;
   youtubeId?: string;
   targetPlatform: string[];
 }

@@ -169,11 +169,18 @@ app.post('/api/process', async (req, res) => {
         let hasRealRenderedFile = false;
         if (inputVideoPath && fs.existsSync(inputVideoPath)) {
           try {
+            const probe = await FFmpegService.probeMedia(inputVideoPath);
+            const actualDuration = probe.duration || 20;
+            // Ensure start & end are within actual video duration
+            const sliceStart = Math.min(cand.startTime, Math.max(0, actualDuration - 4));
+            const sliceDuration = Math.min(cand.duration, Math.max(2, actualDuration - sliceStart));
+            const sliceEnd = sliceStart + sliceDuration;
+
             await FFmpegService.renderClip({
               inputPath: inputVideoPath,
               outputPath: outputMp4Path,
-              startTime: cand.startTime,
-              endTime: cand.endTime,
+              startTime: sliceStart,
+              endTime: sliceEnd,
               aspectRatio: '9:16'
             });
             hasRealRenderedFile = true;

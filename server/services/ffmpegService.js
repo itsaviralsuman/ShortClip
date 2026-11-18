@@ -1,63 +1,98 @@
-import ffmpeg from 'fluent-ffmpeg';
+import { spawn } from 'child_process';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import ffprobeInstaller from '@ffprobe-installer/ffprobe';
-import path from 'path';
 import fs from 'fs';
 
-// Configure binaries
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-ffmpeg.setFfprobePath(ffprobeInstaller.path);
+const FFMPEG_BIN = ffmpegInstaller.path;
+const FFPROBE_BIN = ffprobeInstaller.path;
 
 export class FFmpegService {
   /**
-   * Probe media file using ffprobe to obtain real container metadata
+   * Probe media using ffprobe CLI
    */
   static probeMedia(filePath) {
     return new Promise((resolve, reject) => {
-      ffmpeg.ffprobe(filePath, (err, metadata) => {
-        if (err) return reject(err);
+      const args = [
+        '-v', 'quiet',
+        '-print_format', 'json',
+        '-show_format',
+        '-show_streams',
+        filePath
+      ];
 
-        const videoStream = metadata.streams.find(s => s.codec_type === 'video');
-        const audioStream = metadata.streams.find(s => s.codec_type === 'audio');
-        const format = metadata.format;
+      const proc = spawn(FFPROBE_BIN, args);
+      let stdout = '';
+      let stderr = '';
 
-        const durationSeconds = format.duration ? parseFloat(format.duration) : 0;
-        const width = videoStream ? videoStream.width : 1920;
-        const height = videoStream ? videoStream.height : 1080;
-        const fps = videoStream && videoStream.r_frame_rate
-          ? eval(videoStream.r_frame_rate)
-          : 30;
+      proc.stdout.on('data', data => { stdout += data.toString(); });
+      proc.stderr.on('data', data => { stderr += data.toString(); });
 
-        resolve({
-          duration: durationSeconds,
-          durationMinutes: Math.round(durationSeconds / 60),
-          width,
-          height,
-          aspectRatio: width / height,
-          fps: Math.round(fps),
-          videoCodec: videoStream ? videoStream.codec_name : 'unknown',
-          audioCodec: audioStream ? audioStream.codec_name : 'none',
-          sizeBytes: format.size || 0,
-          bitrate: format.bit_rate || 0
-        });
+      proc.on('close', code => {
+        if (code !== 0) {
+          return reject(new Error(`ffprobe failed with code ${code}: ${stderr}`));
+        }
+        try {
+          const metadata = JSON.parse(stdout);
+          const videoStream = (metadata.streams || []).find(s => s.codec_type === 'video');
+          const audioStream = (metadata.streams || []).find(s => s.codec_type === 'audio');
+          const format = metadata.format || {};
+
+          const durationSeconds = format.duration ? parseFloat(format.duration) : 0;
+          const width = videoStream ? parseInt(videoStream.width) : 1920;
+          const height = videoStream ? parseInt(videoStream.height) : 1080;
+          let fps = 30;
+          if (videoStream && videoStream.r_frame_rate) {
+            const parts = videoStream.r_frame_rate.split('/');
+            if (parts.length === 2 && parseInt(parts[1]) > 0) {
+              fps = Math.round(parseInt(parts[0]) / parseInt(parts[1]));
+            }
+          }
+
+          resolve({
+            duration: durationSeconds,
+            durationMinutes: Math.round(durationSeconds / 60),
+            width,
+            height,
+            aspectRatio: width / height,
+            fps,
+            videoCodec: videoStream ? videoStream.codec_name : 'unknown',
+            audioCodec: audioStream ? audioStream.codec_name : 'none',
+            sizeBytes: parseInt(format.size || '0'),
+            bitrate: parseInt(format.bit_rate || '0')
+          });
+        } catch (e) {
+          reject(new Error(`Failed to parse ffprobe JSON: ${e.message}`));
+        }
       });
     });
   }
 
   /**
-   * Extract 16kHz Mono PCM WAV audio for Whisper transcription
+   * Extract 16kHz Mono PCM WAV audio for transcription
    */
   static extractAudio(videoPath, outputAudioPath) {
     return new Promise((resolve, reject) => {
-      ffmpeg(videoPath)
-        .noVideo()
-        .audioCodec('pcm_s16le')
-        .audioChannels(1)
-        .audioFrequency(16000)
-        .output(outputAudioPath)
-        .on('end', () => resolve(outputAudioPath))
-        .on('error', (err) => reject(err))
-        .run();
+      const args = [
+        '-y',
+        '-i', videoPath,
+        '-vn',
+        '-acodec', 'pcm_s16le',
+        '-ar', '16000',
+        '-ac', '1',
+        outputAudioPath
+      ];
+
+      const proc = spawn(FFMPEG_BIN, args);
+      let stderr = '';
+      proc.stderr.on('data', d => { stderr += d.toString(); });
+
+      proc.on('close', code => {
+        if (code === 0 && fs.existsSync(outputAudioPath)) {
+          resolve(outputAudioPath);
+        } else {
+          reject(new Error(`Audio extraction failed (code ${code}): ${stderr}`));
+        }
+      });
     });
   }
 
@@ -69,63 +104,61 @@ export class FFmpegService {
       const duration = Math.max(1, endTime - startTime);
       const safeStart = Math.max(0, startTime);
 
-      let command = ffmpeg(inputPath)
-        .setStartTime(safeStart)
-        .setDuration(duration);
+      let args = ['-y', '-ss', safeStart.toString(), '-t', duration.toString(), '-i', inputPath];
 
       if (aspectRatio === '9:16') {
-        // High quality Dual-layer 9:16 vertical shorts filter:
-        // [bg]: scale to fill 1080x1920 and apply Gaussian blur
-        // [fg]: scale source video to fit 1080px width preserving aspect ratio
+        // High-speed dual-layer 9:16 vertical short:
+        // [bg]: scale to fill 1080x1920, crop, boxblur
+        // [fg]: scale width to 1080, height automatically even (-2)
         // [overlay]: center foreground on top of blurred background
         const filterGraph = [
-          '[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5[bg]',
-          '[0:v]scale=1080:-1[fg]',
+          '[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=15:3[bg]',
+          '[0:v]scale=1080:-2[fg]',
           '[bg][fg]overlay=(W-w)/2:(H-h)/2[outv]'
         ].join(';');
 
-        command = command
-          .complexFilter(filterGraph, ['outv'])
-          .outputOptions([
-            '-c:v libx264',
-            '-preset fast',
-            '-crf 22',
-            '-pix_fmt yuv420p',
-            '-c:a aac',
-            '-b:a 192k',
-            '-movflags +faststart'
-          ]);
+        args.push(
+          '-filter_complex', filterGraph,
+          '-map', '[outv]',
+          '-map', '0:a?',
+          '-c:v', 'libx264',
+          '-preset', 'ultrafast',
+          '-crf', '23',
+          '-pix_fmt', 'yuv420p',
+          '-c:a', 'aac',
+          '-b:a', '128k',
+          '-movflags', '+faststart',
+          outputPath
+        );
       } else {
-        // Direct copy or standard scale
-        command = command.outputOptions([
-          '-c:v libx264',
-          '-preset fast',
-          '-crf 22',
-          '-pix_fmt yuv420p',
-          '-c:a aac',
-          '-b:a 192k',
-          '-movflags +faststart'
-        ]);
+        args.push(
+          '-c:v', 'libx264',
+          '-preset', 'ultrafast',
+          '-crf', '23',
+          '-pix_fmt', 'yuv420p',
+          '-c:a', 'aac',
+          '-b:a', '128k',
+          '-movflags', '+faststart',
+          outputPath
+        );
       }
 
-      command
-        .output(outputPath)
-        .on('end', () => {
-          if (fs.existsSync(outputPath)) {
-            const stats = fs.statSync(outputPath);
-            resolve({
-              outputPath,
-              sizeBytes: stats.size,
-              duration
-            });
-          } else {
-            reject(new Error('FFmpeg completed but output file was not found on disk.'));
-          }
-        })
-        .on('error', (err) => {
-          reject(err);
-        })
-        .run();
+      const proc = spawn(FFMPEG_BIN, args);
+      let stderr = '';
+      proc.stderr.on('data', d => { stderr += d.toString(); });
+
+      proc.on('close', code => {
+        if (code === 0 && fs.existsSync(outputPath)) {
+          const stats = fs.statSync(outputPath);
+          resolve({
+            outputPath,
+            sizeBytes: stats.size,
+            duration
+          });
+        } else {
+          reject(new Error(`FFmpeg render failed with code ${code}: ${stderr}`));
+        }
+      });
     });
   }
 }

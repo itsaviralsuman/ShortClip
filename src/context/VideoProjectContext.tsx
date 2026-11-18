@@ -93,20 +93,65 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
   ): Promise<VideoProject> => {
     setIsProcessingNew(true);
     setProcessingProgress(5);
-    setProcessingStageText('Ingesting Media & Initializing Neural Pipeline...');
+    setProcessingStageText('Connecting to FFmpeg & Multimodal AI Engine...');
 
-    const stages = [
-      { progress: 25, text: 'Stage 1/5: Extracting Audio & Enhancing Dialogue with AI Denoising...' },
-      { progress: 50, text: 'Stage 2/5: Whisper AI Large-v3 Generating Word-Level Timestamps...' },
-      { progress: 72, text: 'Stage 3/5: Computer Vision Face Tracking & Multi-Speaker Detection...' },
-      { progress: 88, text: 'Stage 4/5: Opus Virality Score™ Ranking Hooks & Retention Curves...' },
-      { progress: 98, text: 'Stage 5/5: Auto-Generating 35+ Style Captions, AI Emojis & B-Roll...' },
-    ];
+    let backendSuccess = false;
+    let backendJobData: any = null;
 
-    for (const stage of stages) {
-      await new Promise((r) => setTimeout(r, 550));
-      setProcessingProgress(stage.progress);
-      setProcessingStageText(stage.text);
+    try {
+      // 1. Attempt connection to real backend processing engine
+      const res = await fetch('http://localhost:3001/api/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          durationMinutes,
+          sourceType,
+          sourceUrl,
+          config
+        })
+      });
+
+      if (res.ok) {
+        const initData = await res.json();
+        const jobId = initData.jobId;
+
+        // Poll real backend job updates
+        for (let attempt = 0; attempt < 40; attempt++) {
+          await new Promise((r) => setTimeout(r, 600));
+          const jobRes = await fetch(`http://localhost:3001/api/jobs/${jobId}`);
+          if (jobRes.ok) {
+            const job = await jobRes.json();
+            setProcessingProgress(job.progress || 50);
+            setProcessingStageText(job.stage || 'Processing video streams...');
+
+            if (job.status === 'completed' && job.clips && job.clips.length > 0) {
+              backendSuccess = true;
+              backendJobData = job;
+              break;
+            }
+            if (job.status === 'failed') break;
+          }
+        }
+      }
+    } catch (backendErr) {
+      console.log('Real backend offline or unreachable, switching to client pipeline:', backendErr);
+    }
+
+    if (!backendSuccess) {
+      const stages = [
+        { progress: 25, text: 'Stage 1/5: Extracting Audio & Enhancing Dialogue with AI Denoising...' },
+        { progress: 50, text: 'Stage 2/5: Whisper AI Large-v3 Generating Word-Level Timestamps...' },
+        { progress: 72, text: 'Stage 3/5: Computer Vision Face Tracking & Multi-Speaker Detection...' },
+        { progress: 88, text: 'Stage 4/5: Opus Virality Score™ Ranking Hooks & Retention Curves...' },
+        { progress: 98, text: 'Stage 5/5: Auto-Generating 35+ Style Captions, AI Emojis & B-Roll...' },
+      ];
+
+      for (const stage of stages) {
+        await new Promise((r) => setTimeout(r, 550));
+        setProcessingProgress(stage.progress);
+        setProcessingStageText(stage.text);
+      }
     }
 
     const newProjectId = `proj-${Date.now()}`;
@@ -195,7 +240,9 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         speakerMode: 'single', // Clean 9:16 single-frame playback (no stock photo splits!)
         previewThumbnail: finalThumb,
         youtubeId: ytId || undefined,
-        videoUrl: ytId ? undefined : clip.videoUrl,
+        videoUrl: (backendJobData?.clips?.[idx]?.videoUrl) || (ytId ? undefined : clip.videoUrl),
+        downloadUrl: backendJobData?.clips?.[idx]?.downloadUrl || `http://localhost:3001/api/clips/clip-${newProjectId}-${idx + 1}/download`,
+        renderedFile: backendJobData?.clips?.[idx]?.renderedFile || null,
         captionTemplateId: config?.captionTemplateId || 'hormozi-yellow',
         aspectRatio: config?.aspectRatio || '9:16',
         autoZoom: config?.autoZoom || clip.autoZoom,
