@@ -30,24 +30,24 @@ export const OpusRecipesModal: React.FC<OpusRecipesModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-[#18181b] border border-slate-700 p-5 sm:p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-2xl rounded-2xl bg-[#18181b] border border-slate-700 p-4 sm:p-6 shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-white">Manage Recipes</h3>
-            <p className="text-xs text-slate-400">Save your auto-edit Recipes for repeat use.</p>
+            <p className="text-[11px] sm:text-xs text-slate-400">Save your auto-edit Recipes for repeat use.</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab & Action bar */}
-        <div className="flex items-center justify-between mt-4 mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-3.5 mb-3">
           <div className="flex items-center gap-3">
             <button className="text-xs font-bold text-white border-b-2 border-purple-500 pb-1">
               OpusClip Recipes

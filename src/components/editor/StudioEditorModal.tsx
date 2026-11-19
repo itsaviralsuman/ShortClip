@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ViralClip } from '../../types';
+import { downloadOrSaveToGallery, isMobileDevice } from '../../utils/mobileDownloadHelper';
 
 interface StudioEditorModalProps {
   clip: ViralClip;
@@ -46,6 +47,8 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
 
   // Mobile viewport tab mode
   const [mobileTab, setMobileTab] = useState<'canvas' | 'transcript' | 'brand'>('canvas');
+  const [downloadNotice, setDownloadNotice] = useState<string | null>(null);
+  const isMobile = isMobileDevice();
 
   // Playback timer simulation
   useEffect(() => {
@@ -72,26 +75,20 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
     setCurrentTime(Math.min(clip.duration, Math.max(0, time)));
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     setIsExporting(true);
+    setDownloadNotice(isMobile ? 'Preparing video for your Phone Gallery... 📲' : 'Exporting 1080p master video... 📥');
     try {
       const downloadTarget = clip.downloadUrl || `http://localhost:3001/api/clips/${clip.id}/download`;
-      const link = document.createElement('a');
-      link.href = downloadTarget;
-      link.setAttribute('download', `${clip.title.replace(/[^a-zA-Z0-9_-]/g, '_')}_master.mp4`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    } catch (e) {
+      const result = await downloadOrSaveToGallery(downloadTarget, `${clip.title}_master`);
+      setDownloadNotice(result.message);
+      setTimeout(() => setDownloadNotice(null), 5500);
+    } catch (e: any) {
       console.error('Download error:', e);
+      setDownloadNotice('Download initiated! Check your phone Downloads or Gallery.');
+      setTimeout(() => setDownloadNotice(null), 4000);
     } finally {
-      setTimeout(() => setIsExporting(false), 1500);
+      setIsExporting(false);
     }
   };
 
@@ -138,23 +135,42 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
           <button
             onClick={handleExport}
             disabled={isExporting}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-brand-purple via-indigo-600 to-brand-emerald hover:opacity-95 text-white text-[11px] sm:text-xs font-bold shadow-lg shadow-purple-500/30 flex items-center gap-1.5 transition active:scale-95"
+            className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-brand-purple via-indigo-600 to-brand-emerald hover:opacity-95 text-white text-xs font-bold shadow-lg shadow-purple-500/30 flex items-center gap-1.5 transition active:scale-95"
           >
             {isExporting ? (
               <>
-                <Zap className="w-3.5 h-3.5 animate-spin" />
-                <span>Exporting...</span>
+                <Zap className="w-3.5 h-3.5 animate-spin text-amber-300" />
+                <span>{isMobile ? 'Saving...' : 'Exporting...'}</span>
               </>
             ) : (
               <>
-                <Download className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Export</span>
-                <span>1080p</span>
+                {isMobile ? (
+                  <>
+                    <Smartphone className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Save to Gallery</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3.5 h-3.5" />
+                    <span className="hidden xs:inline">Export</span>
+                    <span>1080p</span>
+                  </>
+                )}
               </>
             )}
           </button>
         </div>
       </header>
+
+      {/* Download Feedback Banner */}
+      {downloadNotice && (
+        <div className="bg-purple-950/90 border-b border-purple-500/40 px-4 py-2 text-purple-200 text-xs flex items-center justify-between gap-2 animate-fade-in shadow-md">
+          <span className="font-semibold">{downloadNotice}</span>
+          <button onClick={() => setDownloadNotice(null)} className="text-purple-400 hover:text-white text-xs">
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* MOBILE SEGMENTED CONTROL BAR */}
       <div className="lg:hidden bg-studio-900 border-b border-slate-800 px-3 py-1.5 flex items-center justify-around text-xs shrink-0">

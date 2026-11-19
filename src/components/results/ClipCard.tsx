@@ -15,7 +15,8 @@ import {
   BarChart3,
   Zap,
   ZoomIn,
-  Trash2
+  Trash2,
+  Smartphone
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ViralClip } from '../../types';
@@ -23,6 +24,7 @@ import { getTemplateById } from '../../data/captionTemplates';
 import { getOpusCaptionChunk } from '../../utils/captionChunker';
 import { formatTime } from '../../utils/youtubeHelper';
 import { useVideoProjects } from '../../context/VideoProjectContext';
+import { downloadOrSaveToGallery, isMobileDevice } from '../../utils/mobileDownloadHelper';
 
 interface ClipCardProps {
   clip: ViralClip;
@@ -41,6 +43,8 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
   const [copiedCaption, setCopiedCaption] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false);
+  const [downloadNotice, setDownloadNotice] = useState<string | null>(null);
+  const isMobile = isMobileDevice();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -128,24 +132,18 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
 
   const handleExportHD = async () => {
     setIsExporting(true);
+    setDownloadNotice(isMobile ? 'Preparing clip for Phone Gallery... 📲' : 'Exporting HD MP4 video... 📥');
     try {
       const downloadTarget = clip.downloadUrl || `http://localhost:3001/api/clips/${clip.id}/download`;
-      const link = document.createElement('a');
-      link.href = downloadTarget;
-      link.setAttribute('download', `${clip.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.mp4`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      confetti({
-        particleCount: 90,
-        spread: 70,
-        origin: { y: 0.7 }
-      });
-    } catch (e) {
+      const result = await downloadOrSaveToGallery(downloadTarget, clip.title);
+      setDownloadNotice(result.message);
+      setTimeout(() => setDownloadNotice(null), 5500);
+    } catch (e: any) {
       console.error('Download error:', e);
+      setDownloadNotice('Download initiated! Check your phone Downloads or Gallery.');
+      setTimeout(() => setDownloadNotice(null), 4000);
     } finally {
-      setTimeout(() => setIsExporting(false), 1200);
+      setIsExporting(false);
     }
   };
 
@@ -496,6 +494,14 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
             ))}
           </div>
 
+          {/* Mobile Download / Save to Gallery Feedback Toast Banner */}
+          {downloadNotice && (
+            <div className="w-full p-2.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-200 text-xs flex items-center gap-2 animate-fade-in shadow-lg">
+              <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+              <span className="font-medium leading-tight">{downloadNotice}</span>
+            </div>
+          )}
+
           <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
             {isConfirmingDelete ? (
               <div className="flex items-center gap-1 bg-red-950/80 border border-red-500/50 p-1 rounded-xl animate-fade-in">
@@ -506,13 +512,13 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
                     setIsConfirmingDelete(false);
                   }}
                   data-testid="confirm-delete-clip-btn"
-                  className="px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold transition active:scale-95"
+                  className="px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold transition active:scale-95"
                 >
                   Yes
                 </button>
                 <button
                   onClick={() => setIsConfirmingDelete(false)}
-                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]"
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]"
                 >
                   No
                 </button>
@@ -522,16 +528,16 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
                 onClick={() => setIsConfirmingDelete(true)}
                 data-testid="clipcard-delete-btn"
                 title="Delete this clip"
-                className="p-2 sm:p-2.5 rounded-xl bg-studio-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/30 transition active:scale-95"
+                className="p-2.5 rounded-xl bg-studio-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/30 transition active:scale-95"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-4 h-4" />
               </button>
             )}
 
             <button
               onClick={() => onOpenStudio(clip)}
               data-testid="clipcard-studio-btn"
-              className="flex-1 sm:flex-initial px-3 py-1.5 sm:py-2 rounded-xl bg-studio-800 hover:bg-studio-700 text-slate-100 border border-slate-700 text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95"
+              className="flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-studio-800 hover:bg-studio-700 text-slate-100 border border-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95"
             >
               <Scissors className="w-3.5 h-3.5 text-brand-emerald" />
               <span>Studio</span>
@@ -540,17 +546,28 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
             <button
               onClick={handleExportHD}
               disabled={isExporting}
-              className="flex-1 sm:flex-initial px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-[11px] sm:text-xs font-bold shadow-lg shadow-purple-500/25 flex items-center justify-center gap-1.5 transition active:scale-95"
+              data-testid="export-hd-btn"
+              title={isMobile ? 'Save video directly to phone Gallery / Photos' : 'Export HD MP4 video'}
+              className="flex-1 sm:flex-initial px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-500/25 flex items-center justify-center gap-1.5 transition active:scale-95"
             >
               {isExporting ? (
                 <>
-                  <Zap className="w-3.5 h-3.5 animate-spin" />
-                  <span>Rendering...</span>
+                  <Zap className="w-3.5 h-3.5 animate-spin text-amber-300" />
+                  <span>{isMobile ? 'Saving...' : 'Rendering...'}</span>
                 </>
               ) : (
                 <>
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Export HD</span>
+                  {isMobile ? (
+                    <>
+                      <Smartphone className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Save to Gallery</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Export HD</span>
+                    </>
+                  )}
                 </>
               )}
             </button>

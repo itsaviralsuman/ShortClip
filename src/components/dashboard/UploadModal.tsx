@@ -397,8 +397,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
       {/* Opus.pro Multi-Modal Video Repurposing Studio Configuration */}
       {isConfigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-4xl max-h-[94vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-4xl max-h-[96vh] overflow-y-auto">
             <OpusIngestionPanel
               videoTitle={currentTitle}
               durationMinutes={currentDuration}

@@ -107,15 +107,15 @@ export const OpusIngestionPanel: React.FC<OpusIngestionPanelProps> = ({
   };
 
   return (
-    <div className="w-full rounded-2xl bg-[#121214] border border-slate-800 text-slate-100 shadow-2xl overflow-hidden p-4 sm:p-6 animate-fade-in">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="w-full rounded-2xl bg-[#121214] border border-slate-800 text-slate-100 shadow-2xl overflow-hidden p-3 sm:p-6 animate-fade-in">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
         {/* LEFT / CENTER: Settings & Ingestion Form (2 cols) */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-5">
           {/* Top Video Preview & Range Card matching Screenshot 3 */}
-          <div className="p-4 rounded-xl bg-[#1c1c1f] border border-slate-800 space-y-3">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-[#1c1c1f] border border-slate-800 space-y-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 sm:gap-4">
               {/* Thumbnail with 1080p Badge */}
-              <div className="relative w-36 sm:w-44 aspect-video rounded-lg overflow-hidden bg-black shrink-0 border border-slate-700">
+              <div className="relative w-full sm:w-44 aspect-video rounded-lg overflow-hidden bg-black shrink-0 border border-slate-700 max-h-[160px] sm:max-h-none">
                 <img src={thumbnailUrl} alt={videoTitle} className="w-full h-full object-cover" />
                 <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-mono font-bold text-white border border-white/20">
                   1080p
@@ -398,10 +398,10 @@ export const OpusIngestionPanel: React.FC<OpusIngestionPanelProps> = ({
               type="button"
               onClick={handleCreate}
               data-testid="start-ai-repurposing-btn"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 transition active:scale-95"
+              className="w-full py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 transition active:scale-95"
             >
               <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>Create Viral Shorts</span>
+              <span>Create Viral Shorts ({creditsRequired} Credits)</span>
             </button>
 
             <p className="text-[10px] text-slate-500 text-center leading-tight">

@@ -16,8 +16,10 @@ import {
   Trash2,
   Download,
   CheckSquare,
-  Square
+  Square,
+  Smartphone
 } from 'lucide-react';
+import { downloadOrSaveToGallery, isMobileDevice } from '../../utils/mobileDownloadHelper';
 
 interface ViralClipsViewProps {
   onOpenStudio: (clip: ViralClip) => void;
@@ -40,6 +42,9 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
   const [sortBy, setSortBy] = useState<'score' | 'duration'>('score');
   const [selectedClipIds, setSelectedClipIds] = useState<Set<string>>(new Set());
   const [isConfirmingBulkDelete, setIsConfirmingBulkDelete] = useState<boolean>(false);
+  const [batchNotice, setBatchNotice] = useState<string | null>(null);
+  const [isBatchDownloading, setIsBatchDownloading] = useState<boolean>(false);
+  const isMobile = isMobileDevice();
 
   const filteredClips = getFilteredClips();
 
@@ -82,18 +87,31 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
     setIsConfirmingBulkDelete(false);
   };
 
-  const handleBatchDownload = () => {
+  const handleBatchDownload = async () => {
     const clipsToDownload = sortedClips.filter(c => selectedClipIds.has(c.id));
-    clipsToDownload.forEach((c, idx) => {
-      setTimeout(() => {
-        const link = document.createElement('a');
-        link.href = c.downloadUrl || `http://localhost:3001/api/clips/${c.id}/download`;
-        link.setAttribute('download', `${c.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.mp4`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, idx * 400);
-    });
+    if (clipsToDownload.length === 0) return;
+
+    setIsBatchDownloading(true);
+    setBatchNotice(
+      isMobile
+        ? `Saving ${clipsToDownload.length} clips directly to your phone... 📲`
+        : `Exporting ${clipsToDownload.length} clips in high definition... 📥`
+    );
+
+    for (let idx = 0; idx < clipsToDownload.length; idx++) {
+      const c = clipsToDownload[idx];
+      const targetUrl = c.downloadUrl || `http://localhost:3001/api/clips/${c.id}/download`;
+      await downloadOrSaveToGallery(targetUrl, c.title);
+      await new Promise((r) => setTimeout(r, 600));
+    }
+
+    setIsBatchDownloading(false);
+    setBatchNotice(
+      isMobile
+        ? `All ${clipsToDownload.length} clips saved! Check your Phone Photos / Gallery app. 📲`
+        : `All ${clipsToDownload.length} clips downloaded successfully! 📥`
+    );
+    setTimeout(() => setBatchNotice(null), 6000);
   };
 
   if (!activeProject) {
@@ -211,8 +229,8 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
         </div>
 
         {/* Quick Suggestion Chips */}
-        <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
-          <span className="text-[11px] text-slate-500 font-medium">Quick Prompts:</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs pt-1 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
+          <span className="text-[11px] text-slate-500 font-medium shrink-0">Quick Prompts:</span>
           {[
             { id: 'all', label: 'All Viral Clips', query: '' },
             { id: 'money', label: '💰 Money & Scaling', query: 'money' },
@@ -223,7 +241,7 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
             <button
               key={chip.id}
               onClick={() => handleChipClick(chip.id, chip.query)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
+              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition shrink-0 ${
                 activeChip === chip.id
                   ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
                   : 'bg-studio-900 text-slate-400 hover:text-slate-200 border border-slate-800'
@@ -292,11 +310,30 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
 
                 <button
                   onClick={handleBatchDownload}
+                  disabled={isBatchDownloading}
                   data-testid="bulk-download-btn"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-md transition active:scale-95"
+                  className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-md transition active:scale-95 text-xs"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download Selected ({selectedClipIds.size})</span>
+                  {isBatchDownloading ? (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5 animate-spin text-amber-300" />
+                      <span>{isMobile ? 'Saving...' : 'Exporting...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      {isMobile ? (
+                        <>
+                          <Smartphone className="w-3.5 h-3.5 text-amber-300" />
+                          <span>Save Selected to Gallery ({selectedClipIds.size})</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download Selected ({selectedClipIds.size})</span>
+                        </>
+                      )}
+                    </>
+                  )}
                 </button>
               </>
             )}
@@ -305,6 +342,19 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
               Duration strictly 60s–120s • {sortedClips.length} clips ready
             </span>
           </div>
+
+          {/* Batch Notice Toast on Mobile / Desktop */}
+          {batchNotice && (
+            <div className="w-full mt-2 p-2.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-200 text-xs flex items-center justify-between gap-2 animate-fade-in shadow-md">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+                <span className="font-medium">{batchNotice}</span>
+              </div>
+              <button onClick={() => setBatchNotice(null)} className="text-purple-400 hover:text-white text-xs">
+                ✕
+              </button>
+            </div>
+          )}
         </div>
       )}
 

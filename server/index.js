@@ -393,26 +393,35 @@ app.get('/api/jobs/:id', (req, res) => {
 });
 
 /**
- * Download real rendered MP4 video file
+ * Download real rendered MP4 video file with mobile-optimized headers
  */
 app.get('/api/clips/:clipId/download', (req, res) => {
   const { clipId } = req.params;
   const filename = `${clipId}.mp4`;
   const filePath = path.join(outputsDir, filename);
 
+  const serveFile = (targetPath, downloadName) => {
+    const stat = fs.statSync(targetPath);
+    res.writeHead(200, {
+      'Content-Disposition': `attachment; filename="${downloadName}"`,
+      'Content-Type': 'video/mp4',
+      'Content-Length': stat.size,
+      'Accept-Ranges': 'bytes',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Expose-Headers': 'Content-Disposition, Content-Length',
+      'Cache-Control': 'public, max-age=3600'
+    });
+    fs.createReadStream(targetPath).pipe(res);
+  };
+
   if (fs.existsSync(filePath)) {
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Type', 'video/mp4');
-    const fileStream = fs.createReadStream(filePath);
-    fileStream.pipe(res);
+    serveFile(filePath, filename);
   } else {
     // If specific file not on disk, send the first available rendered MP4 or error
     const files = fs.readdirSync(outputsDir).filter(f => f.endsWith('.mp4'));
     if (files.length > 0) {
       const fallbackFile = path.join(outputsDir, files[0]);
-      res.setHeader('Content-Disposition', `attachment; filename="${clipId}.mp4"`);
-      res.setHeader('Content-Type', 'video/mp4');
-      fs.createReadStream(fallbackFile).pipe(res);
+      serveFile(fallbackFile, filename);
     } else {
       res.status(404).json({ error: 'Rendered MP4 file not found.' });
     }

@@ -14,6 +14,7 @@ import { SeatLimitModal } from './components/auth/SeatLimitModal';
 import { SecurityToast } from './components/auth/SecurityToast';
 import { SecurityInboxModal } from './components/auth/SecurityInboxModal';
 import { ViralClip } from './types';
+import { Sparkles, LayoutDashboard, Film, BarChart3, Plus } from 'lucide-react';
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
@@ -114,6 +115,66 @@ const MainApp: React.FC = () => {
 
         {activeTab === 'analytics' && <QuotaAnalyticsPage />}
       </main>
+
+      {/* Native App-Style Mobile Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-studio-950/95 backdrop-blur-xl border-t border-slate-800/90 px-3 py-1.5 flex items-center justify-around shadow-2xl">
+        <button
+          onClick={() => setActiveTab('landing')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition ${
+            activeTab === 'landing' ? 'text-purple-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span className="text-[10px]">Home</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition ${
+            activeTab === 'dashboard' ? 'text-purple-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <LayoutDashboard className="w-4 h-4" />
+          <span className="text-[10px]">Studio</span>
+        </button>
+
+        {/* Floating Quick Ingest Button */}
+        <button
+          onClick={() => {
+            setInitialUrlForModal('');
+            setIsUploadModalOpen(true);
+          }}
+          title="Ingest Video"
+          className="relative -top-3 w-11 h-11 rounded-full bg-gradient-to-tr from-brand-purple to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/40 border-2 border-studio-950 active:scale-95 transition"
+        >
+          <Plus className="w-5 h-5 stroke-[2.5]" />
+        </button>
+
+        <button
+          onClick={() => setActiveTab('clips')}
+          className={`relative flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition ${
+            activeTab === 'clips' ? 'text-purple-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Film className="w-4 h-4" />
+          <span className="text-[10px]">Clips</span>
+          {(activeProject?.clipsCount ?? 0) > 0 && (
+            <span className="absolute top-0 right-1 px-1 min-w-[14px] h-[14px] rounded-full bg-brand-emerald text-black text-[9px] font-black flex items-center justify-center">
+              {activeProject?.clipsCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition ${
+            activeTab === 'analytics' ? 'text-purple-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span className="text-[10px]">Quota</span>
+        </button>
+      </nav>
 
       {/* 4. Global Ingestion & Quota Validation Modal */}
       {isUploadModalOpen && (
