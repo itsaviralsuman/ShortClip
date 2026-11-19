@@ -3,8 +3,20 @@ import { Sparkles, Video, Flame } from 'lucide-react';
 
 export const BeforeAfterSlider: React.FC = () => {
   const [sliderPosition, setSliderPosition] = useState<number>(50); // percentage 0 - 100
+  const [containerWidth, setContainerWidth] = useState<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef<boolean>(false);
+
+  React.useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
 
   const handlePointerDown = () => {
     isDragging.current = true;
@@ -87,7 +99,10 @@ export const BeforeAfterSlider: React.FC = () => {
           style={{ width: `${sliderPosition}%` }}
           className="absolute inset-y-0 left-0 overflow-hidden border-r-2 border-brand-purple bg-studio-900"
         >
-          <div className="relative w-[1000px] h-full flex items-center justify-center bg-slate-900/90">
+          <div
+            style={{ width: containerWidth ? `${containerWidth}px` : '100%', maxWidth: 'none' }}
+            className="relative h-full flex items-center justify-center bg-slate-900/90"
+          >
             <img
               src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1200&auto=format&fit=crop&q=80"
               alt="Original Video Stream"

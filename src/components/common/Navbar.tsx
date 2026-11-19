@@ -69,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-display font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent">
                   ClipFusion<span className="text-brand-purple">.AI</span>
                 </span>
-                <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase tracking-wider font-semibold">
+                <span className="hidden xs:inline-block text-[9px] sm:text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase tracking-wider font-semibold">
                   Opus × Vizard
                 </span>
               </div>
@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={openSecurityInbox}
               title="Security Email Notification Log (Kaise Hua)"
-              className="relative p-2 rounded-xl bg-studio-900 border border-slate-700 hover:border-purple-500/50 text-slate-300 hover:text-white transition"
+              className="hidden xs:flex relative p-2 rounded-xl bg-studio-900 border border-slate-700 hover:border-purple-500/50 text-slate-300 hover:text-white transition"
             >
               <Mail className="w-4 h-4 text-purple-400" />
               {notifications.length > 0 && (
@@ -163,14 +163,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
 
-            {/* Repurpose Video CTA */}
+            {/* Repurpose Video CTA (Visible on tablet & desktop; on mobile the bottom bar has the primary (+) Ingest button) */}
             <button
               onClick={onOpenUploadModal}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-[11px] sm:text-xs font-bold shadow-lg shadow-purple-500/25 transition duration-200 active:scale-95 shrink-0"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-500/25 transition duration-200 active:scale-95 shrink-0"
             >
               <Zap className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden xs:inline">Repurpose</span>
-              <span>Video</span>
+              <span>Repurpose Video</span>
             </button>
 
             {/* Sign In / User Profile Button */}

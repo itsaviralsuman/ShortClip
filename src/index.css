@@ -7,14 +7,41 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply bg-[#07090E] text-slate-100 overflow-x-hidden font-sans;
+    width: 100%;
+    max-width: 100vw;
+    position: relative;
+    overscroll-behavior-x: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
     background-image: 
       radial-gradient(at 15% 15%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
       radial-gradient(at 85% 85%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
       radial-gradient(at 50% 50%, rgba(6, 182, 212, 0.04) 0px, transparent 60%);
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Prevent iOS Safari automatic zoom-in jump when tapping input fields */
+  @media screen and (max-width: 768px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
   }
 
   /* Custom Sleek Scrollbar */
