@@ -107,12 +107,15 @@ export class FFmpegService {
    * Render real Short MP4 with reframing (9:16, 1:1, 16:9, 4:5), burned captions,
    * atomic file creation (.tmp staging), normalized AAC audio, and zero frozen intro frames.
    */
-  static async renderClip({ inputPath, outputPath, startTime, endTime, aspectRatio = '9:16', subtitlePath }) {
+  static async renderClip({ inputPath, outputPath, startTime, endTime, aspectRatio = '9:16', subtitlePath, audioPath = null }) {
     let hasAudio = true;
     try {
       const probe = await this.probeMedia(inputPath);
       hasAudio = probe.hasAudio;
     } catch (e) {}
+
+    const separateAudio = !hasAudio && audioPath && fs.existsSync(audioPath);
+    const audioAvailable = hasAudio || separateAudio;
 
     return new Promise((resolve, reject) => {
       const duration = Math.max(1, endTime - startTime);
@@ -143,19 +146,31 @@ export class FFmpegService {
 
       if (hasAudio) {
         filterGraph += `;[0:a]asetpts=PTS-STARTPTS[outa]`;
+      } else if (separateAudio) {
+        filterGraph += `;[1:a]asetpts=PTS-STARTPTS[outa]`;
       }
 
       const args = [
         '-y',
         '-ss', safeStart.toString(),
-        '-i', inputPath,
+        '-i', inputPath
+      ];
+
+      if (separateAudio) {
+        args.push(
+          '-ss', safeStart.toString(),
+          '-i', audioPath
+        );
+      }
+
+      args.push(
         '-t', duration.toString(),
         '-avoid_negative_ts', 'make_zero',
         '-filter_complex', filterGraph,
         '-map', '[outv]'
-      ];
+      );
 
-      if (hasAudio) {
+      if (audioAvailable) {
         args.push(
           '-map', '[outa]',
           '-c:a', 'aac',

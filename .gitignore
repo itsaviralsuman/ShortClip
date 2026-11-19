@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+__pycache__
+*.pyc
 
 node_modules
 server/node_modules
@@ -22,6 +24,8 @@ server/audio/*
 !server/audio/.gitkeep
 server/subtitles/*
 !server/subtitles/.gitkeep
+server/downloads/*
+!server/downloads/.gitkeep
 
 # Editor directories and files
 .vscode/*

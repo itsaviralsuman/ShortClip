@@ -4,6 +4,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 
 import { FFmpegService } from './services/ffmpegService.js';
 import { TranscriptionService } from './services/transcriptionService.js';
@@ -20,10 +21,46 @@ const PORT = process.env.PORT || 3001;
 const uploadsDir = path.join(__dirname, 'uploads');
 const audioDir = path.join(__dirname, 'audio');
 const outputsDir = path.join(__dirname, 'outputs');
+const downloadsDir = path.join(__dirname, 'downloads'); // YouTube downloads
 
-[uploadsDir, audioDir, outputsDir].forEach(dir => {
+[uploadsDir, audioDir, outputsDir, downloadsDir].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
+
+// Python interpreter
+const PYTHON_BIN = process.env.PYTHON_BIN || 'python';
+const YOUTUBE_DOWNLOAD_SCRIPT = path.resolve(__dirname, 'workers', 'youtube_download.py');
+const TRANSCRIBE_SCRIPT = path.resolve(__dirname, 'workers', 'transcribe.py');
+
+/**
+ * Run a Python script and return parsed JSON stdout
+ */
+function runPython(args, timeoutMs = 600000) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(PYTHON_BIN, args, { timeout: timeoutMs });
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', d => { stdout += d.toString(); });
+    proc.stderr.on('data', d => { stderr += d.toString(); });
+    proc.on('close', code => {
+      // Try to parse last JSON line from stdout
+      const lines = stdout.trim().split('\n').filter(l => l.trim().startsWith('{'));
+      const lastJson = lines[lines.length - 1];
+      if (lastJson) {
+        try {
+          resolve(JSON.parse(lastJson));
+        } catch {
+          resolve({ success: false, error: 'JSON parse error', raw: lastJson, stderr });
+        }
+      } else if (code !== 0) {
+        reject(new Error(`Python exited ${code}: ${stderr.slice(-500)}`));
+      } else {
+        resolve({ success: true, stderr });
+      }
+    });
+    proc.on('error', err => reject(err));
+  });
+}
 
 // Middleware
 app.use(cors());
@@ -102,6 +139,86 @@ app.get('/api/health', (req, res) => {
 });
 
 /**
+ * YouTube URL download endpoint — downloads video + audio via yt-dlp
+ * POST /api/download-youtube { url }
+ * Returns { jobId, title, durationSeconds, videoPath, audioPath }
+ */
+app.post('/api/download-youtube', async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: 'url is required' });
+
+  const jobId = `ytdl-${Date.now()}`;
+  const jobDownloadDir = path.join(downloadsDir, jobId);
+  fs.mkdirSync(jobDownloadDir, { recursive: true });
+
+  // Register as an in-progress download job
+  jobs.set(jobId, {
+    id: jobId,
+    type: 'youtube_download',
+    status: 'downloading',
+    progress: 5,
+    stage: 'Downloading YouTube video via yt-dlp...',
+    url,
+    videoPath: null,
+    audioPath: null,
+    title: null,
+    durationSeconds: 0,
+    clips: []
+  });
+
+  res.json({ success: true, jobId, message: 'YouTube download started' });
+
+  // Run in background
+  (async () => {
+    const job = jobs.get(jobId);
+    try {
+      console.log(`[yt-dlp] Downloading: ${url}`);
+      const result = await runPython([
+        YOUTUBE_DOWNLOAD_SCRIPT,
+        url,
+        '--output-dir', jobDownloadDir,
+        '--job-id', jobId
+      ], 600000);
+
+      if (!result.success) throw new Error(result.error || 'yt-dlp download failed');
+
+      job.videoPath = result.video_path;
+      job.audioPath = result.audio_path;
+      job.title = result.title;
+      job.durationSeconds = result.duration_seconds;
+      job.status = 'ready';
+      job.progress = 100;
+      job.stage = `Downloaded: ${result.title}`;
+      console.log(`[yt-dlp] Done: ${result.title} (${Math.round(result.duration_seconds)}s), video=${result.video_path}, audio=${result.audio_path}`);
+    } catch (err) {
+      console.error('[yt-dlp] Error:', err.message);
+      job.status = 'failed';
+      job.error = err.message;
+    }
+  })();
+});
+
+/**
+ * Check YouTube download job status
+ * GET /api/download-youtube/:jobId
+ */
+app.get('/api/download-youtube/:jobId', (req, res) => {
+  const job = jobs.get(req.params.jobId);
+  if (!job) return res.status(404).json({ error: 'Download job not found' });
+  res.json({
+    jobId: job.id,
+    status: job.status,
+    progress: job.progress,
+    stage: job.stage,
+    title: job.title,
+    durationSeconds: job.durationSeconds,
+    videoPath: job.videoPath,
+    audioPath: job.audioPath,
+    error: job.error
+  });
+});
+
+/**
  * Direct video file upload endpoint
  */
 app.post('/api/upload', upload.single('video'), async (req, res) => {
@@ -141,14 +258,28 @@ app.post('/api/process', async (req, res) => {
   } = req.body;
 
   const jobId = `job-${Date.now()}`;
-  const totalSeconds = durationMinutes * 60;
   const language = config.language || 'hinglish';
-  const targetDurationPreference = config.targetClipDuration || '30-60s';
+  const targetDurationPreference = config.targetClipDuration || '60-120s';
 
   // Find or create valid input video file for rendering
   let inputVideoPath = filePath;
+  let inputAudioPath = null; // pre-extracted audio (from yt-dlp)
+  let resolvedTitle = title;
+  let totalSeconds = durationMinutes * 60;
 
-  // If local file wasn't provided directly (e.g. YouTube URL input), check for existing local demo video or sample
+  // If ytDownloadJobId provided, use the already-downloaded files
+  if (req.body.ytDownloadJobId) {
+    const ytJob = jobs.get(req.body.ytDownloadJobId);
+    if (ytJob && ytJob.status === 'ready') {
+      inputVideoPath = ytJob.videoPath;
+      inputAudioPath = ytJob.audioPath;
+      resolvedTitle = ytJob.title || title;
+      totalSeconds = ytJob.durationSeconds || totalSeconds;
+      console.log(`[process] Using YouTube download: ${resolvedTitle}, video=${inputVideoPath}`);
+    }
+  }
+
+  // If local file wasn't provided, check for existing local demo video or sample
   if (!inputVideoPath || !fs.existsSync(inputVideoPath)) {
     // Look for any existing sample video in uploads
     const existing = fs.readdirSync(uploadsDir).find(f => f.endsWith('.mp4'));
@@ -160,10 +291,10 @@ app.post('/api/process', async (req, res) => {
   // Register job in progress
   jobs.set(jobId, {
     id: jobId,
-    title,
+    title: resolvedTitle,
     status: 'processing',
     progress: 10,
-    stage: 'Discovering Semantic Candidates & Transcribing Audio...',
+    stage: 'Starting AI Analysis & Transcription...',
     clips: []
   });
 
@@ -179,47 +310,82 @@ app.post('/api/process', async (req, res) => {
     try {
       const job = jobs.get(jobId);
 
-      // Step 1: Discover Candidates across full source timeline
-      const candidates = CandidateService.discoverCandidates({
-        videoTitle: title,
-        totalDurationSeconds: totalSeconds,
-        targetDurationPreference,
-        language,
-        clipMode: 'best_moments'
-      });
+      job.progress = 15;
+      job.stage = 'Transcribing Full Source Video (Whisper AI)...';
 
-      job.progress = 25;
-      job.stage = 'Transcribing Full Source Video Dialogue (Whisper AI)...';
-
-      // Step 2: Transcribe source audio ONCE (cached by input path for speed)
+      // Step 1: Transcribe source audio ONCE (cached by input path for speed)
       let fullTranscript = null;
       if (inputVideoPath && fs.existsSync(inputVideoPath)) {
-        if (transcriptCache.has(inputVideoPath)) {
-          fullTranscript = transcriptCache.get(inputVideoPath);
-          console.log(`⚡ Reusing cached full transcript for ${inputVideoPath} (${fullTranscript.length} words)`);
+        const cacheKey = inputAudioPath || inputVideoPath;
+        if (transcriptCache.has(cacheKey)) {
+          fullTranscript = transcriptCache.get(cacheKey);
+          console.log(`⚡ Reusing cached transcript (${fullTranscript.length} words)`);
         } else {
           try {
-            const baseName = path.basename(inputVideoPath, path.extname(inputVideoPath));
-            const audioPath = path.join(audioDir, `${baseName}.wav`);
-            if (!fs.existsSync(audioPath)) {
-              await FFmpegService.extractAudio(inputVideoPath, audioPath);
+            let audioPath = inputAudioPath;
+            if (!audioPath || !fs.existsSync(audioPath)) {
+              const baseName = path.basename(inputVideoPath, path.extname(inputVideoPath));
+              audioPath = path.join(audioDir, `${baseName}.wav`);
+              if (!fs.existsSync(audioPath)) {
+                job.stage = 'Extracting audio from video...';
+                await FFmpegService.extractAudio(inputVideoPath, audioPath);
+              }
             }
+            job.stage = 'Running Whisper AI transcription...';
             fullTranscript = await TranscriptionService.transcribeAudio({
               audioPath,
               language,
               durationSeconds: totalSeconds
             });
             if (fullTranscript && fullTranscript.length > 0) {
-              transcriptCache.set(inputVideoPath, fullTranscript);
+              transcriptCache.set(cacheKey, fullTranscript);
+              console.log(`✅ Transcribed ${fullTranscript.length} words from real audio`);
             }
           } catch (transcribeErr) {
-            console.warn('Source audio transcription warning:', transcribeErr.message);
+            console.warn('Transcription warning:', transcribeErr.message);
           }
         }
       }
 
       job.progress = 40;
-      job.stage = `Rendering ${candidates.length} Viral Shorts with Clip-Specific Burned Captions...`;
+      job.stage = 'Detecting best viral moments from transcript...';
+
+      // Step 2: Detect best moments — use REAL transcript if available, else fallback to time-based
+      let candidates;
+      if (fullTranscript && fullTranscript.length > 10) {
+        console.log(`🧠 Real transcript-based best-moment detection (${fullTranscript.length} words)`);
+        candidates = CandidateService.detectBestMomentsFromTranscript(fullTranscript, {
+          videoTitle: resolvedTitle,
+          minDuration: 60,
+          maxDuration: 120,
+          targetCount: totalSeconds >= 3600 ? 10 : totalSeconds >= 1800 ? 9 : totalSeconds >= 600 ? 8 : Math.max(2, Math.floor(totalSeconds / 65)),
+          language
+        });
+        // Fallback to time-based if real detection found too few
+        if (candidates.length < 2) {
+          console.log('Real detection found too few candidates, supplementing with time-based...');
+          const timeBased = CandidateService.discoverCandidates({
+            videoTitle: resolvedTitle,
+            totalDurationSeconds: totalSeconds,
+            targetDurationPreference,
+            language,
+            clipMode: 'best_moments'
+          });
+          candidates = [...candidates, ...timeBased].slice(0, 10);
+        }
+      } else {
+        console.log('⚠️ No real transcript — using time-based candidate detection');
+        candidates = CandidateService.discoverCandidates({
+          videoTitle: resolvedTitle,
+          totalDurationSeconds: totalSeconds,
+          targetDurationPreference,
+          language,
+          clipMode: 'best_moments'
+        });
+      }
+
+      job.progress = 50;
+      job.stage = `Rendering ${candidates.length} clips with FFmpeg...`;
 
       // Step 3: Concurrent clip rendering with controlled concurrency (Limit = 3)
       let completedCount = 0;
@@ -244,7 +410,7 @@ app.post('/api/process', async (req, res) => {
           cand.endTime,
           i,
           language,
-          title
+          resolvedTitle
         );
 
         // Generate unique Opus-style .ass karaoke subtitles file for THIS clip
@@ -276,7 +442,8 @@ app.post('/api/process', async (req, res) => {
               startTime: sliceStart,
               endTime: sliceEnd,
               aspectRatio: config.aspectRatio || '9:16',
-              subtitlePath
+              subtitlePath,
+              audioPath: inputAudioPath
             });
             hasRealRenderedFile = true;
           } catch (renderErr) {

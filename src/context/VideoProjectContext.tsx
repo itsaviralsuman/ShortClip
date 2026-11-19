@@ -128,9 +128,64 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
     let backendSuccess = false;
     let backendJobData: any = null;
 
+    // Helper: determine backend base URL (supports LAN IP for phone access)
+    const getBackendUrl = () => {
+      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return `http://${window.location.hostname}:3001`;
+      }
+      return 'http://localhost:3001';
+    };
+    const BACKEND = getBackendUrl();
+
     try {
-      // 1. Attempt connection to real backend processing engine
-      const res = await fetch('http://localhost:3001/api/process', {
+      let ytDownloadJobId: string | null = null;
+
+      // STEP 0: If YouTube URL provided, download it first via yt-dlp
+      if (sourceType === 'url' && sourceUrl && sourceUrl.includes('youtube') || sourceUrl?.includes('youtu.be')) {
+        setProcessingProgress(8);
+        setProcessingStageText('📥 Downloading YouTube video via yt-dlp...');
+
+        try {
+          const dlRes = await fetch(`${BACKEND}/api/download-youtube`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: sourceUrl })
+          });
+
+          if (dlRes.ok) {
+            const dlInit = await dlRes.json();
+            ytDownloadJobId = dlInit.jobId;
+
+            // Poll for download completion (max 5 minutes)
+            for (let attempt = 0; attempt < 60; attempt++) {
+              await new Promise(r => setTimeout(r, 5000));
+              const statusRes = await fetch(`${BACKEND}/api/download-youtube/${ytDownloadJobId}`);
+              if (statusRes.ok) {
+                const dlStatus = await statusRes.json();
+                if (dlStatus.status === 'ready') {
+                  setProcessingProgress(18);
+                  setProcessingStageText(`✅ Downloaded: ${dlStatus.title || 'Video'}`);
+                  // Update title from real video title
+                  if (dlStatus.title) title = dlStatus.title;
+                  if (dlStatus.durationSeconds) durationMinutes = Math.ceil(dlStatus.durationSeconds / 60);
+                  break;
+                } else if (dlStatus.status === 'failed') {
+                  console.warn('YouTube download failed:', dlStatus.error);
+                  ytDownloadJobId = null;
+                  break;
+                }
+                setProcessingStageText(`📥 Downloading... ${dlStatus.stage || ''}`);
+              }
+            }
+          }
+        } catch (dlErr) {
+          console.warn('YouTube download endpoint not reachable:', dlErr);
+          ytDownloadJobId = null;
+        }
+      }
+
+      // STEP 1: Attempt connection to real backend processing engine
+      const res = await fetch(`${BACKEND}/api/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,6 +193,7 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
           durationMinutes,
           sourceType,
           sourceUrl,
+          ytDownloadJobId,
           config
         })
       });
@@ -146,10 +202,10 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const initData = await res.json();
         const jobId = initData.jobId;
 
-        // Poll real backend job updates
-        for (let attempt = 0; attempt < 40; attempt++) {
-          await new Promise((r) => setTimeout(r, 600));
-          const jobRes = await fetch(`http://localhost:3001/api/jobs/${jobId}`);
+        // Poll real backend job updates (max 10 minutes total)
+        for (let attempt = 0; attempt < 120; attempt++) {
+          await new Promise((r) => setTimeout(r, 3000));
+          const jobRes = await fetch(`${BACKEND}/api/jobs/${jobId}`);
           if (jobRes.ok) {
             const job = await jobRes.json();
             setProcessingProgress(job.progress || 50);
@@ -194,16 +250,28 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
     let generatedClips: ViralClip[] = [];
 
     if (backendSuccess && backendJobData?.clips && backendJobData.clips.length > 0) {
-      generatedClips = backendJobData.clips.map((c: any, idx: number) => ({
-        ...c,
-        id: c.id || `clip-${newProjectId}-${idx + 1}`,
-        projectId: newProjectId,
-        previewThumbnail: finalThumb,
-        youtubeId: ytId || undefined,
-        language: selectedLang,
-        aspectRatio: config?.aspectRatio || '9:16',
-        captionTemplateId: config?.captionTemplateId || 'hormozi-yellow'
-      }));
+      generatedClips = backendJobData.clips.map((c: any, idx: number) => {
+        // Fix localhost URLs for LAN/phone access
+        const fixUrl = (url: string | undefined) => {
+          if (!url) return undefined;
+          if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            return url.replace('localhost:3001', `${window.location.hostname}:3001`).replace('127.0.0.1:3001', `${window.location.hostname}:3001`);
+          }
+          return url;
+        };
+        return {
+          ...c,
+          id: c.id || `clip-${newProjectId}-${idx + 1}`,
+          projectId: newProjectId,
+          previewThumbnail: finalThumb,
+          youtubeId: ytId || undefined,
+          language: selectedLang,
+          aspectRatio: config?.aspectRatio || '9:16',
+          captionTemplateId: config?.captionTemplateId || 'hormozi-yellow',
+          videoUrl: fixUrl(c.videoUrl),
+          downloadUrl: fixUrl(c.downloadUrl)
+        };
+      });
     } else {
       // Dynamic candidate count: at least 8 clips for videos >= 10m
       const totalSec = Math.max(120, durationMinutes * 60);
