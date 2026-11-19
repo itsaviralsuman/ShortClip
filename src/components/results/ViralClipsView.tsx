@@ -309,7 +309,12 @@ export const ViralClipsView: React.FC<ViralClipsViewProps> = ({
                 )}
 
                 <button
-                  onClick={handleBatchDownload}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleBatchDownload();
+                  }}
                   disabled={isBatchDownloading}
                   data-testid="bulk-download-btn"
                   className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-md transition active:scale-95 text-xs"

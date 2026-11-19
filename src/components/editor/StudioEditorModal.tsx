@@ -133,7 +133,12 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
           </button>
 
           <button
-            onClick={handleExport}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleExport();
+            }}
             disabled={isExporting}
             className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-brand-purple via-indigo-600 to-brand-emerald hover:opacity-95 text-white text-xs font-bold shadow-lg shadow-purple-500/30 flex items-center gap-1.5 transition active:scale-95"
           >

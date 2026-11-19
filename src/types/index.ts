@@ -202,4 +202,9 @@ export interface AIProcessingConfig {
   autoBRoll: AutoBRollConfig;
   removeFillers: boolean;
   highlightKeywords: boolean;
+  rangeStart?: number;
+  rangeEnd?: number;
+  autoSaveToGallery?: boolean;
+  isCaptionsEnabled?: boolean;
+  isHookTitleEnabled?: boolean;
 }

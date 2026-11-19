@@ -15,6 +15,7 @@ import { INITIAL_PROJECTS, SAMPLE_CLIPS, SAMPLE_PODCAST_WORDS } from '../data/sa
 import { filterClipsByPrompt } from '../utils/viralityScorer';
 import { extractYouTubeId } from '../utils/youtubeHelper';
 import { generateTranscriptForDuration } from '../data/multilingualTranscripts';
+import { resolveDownloadUrl } from '../utils/mobileDownloadHelper';
 
 interface VideoProjectContextType {
   projects: VideoProject[];
@@ -230,10 +231,13 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         // Enforce strict 60s - 120s duration clamp
         const clipDuration = Number(Math.max(60.0, Math.min(120.0, rawDur)).toFixed(1));
 
-        // Distribute start offsets across the full source stream
-        const maxStart = Math.max(0, totalSec - clipDuration);
-        const startRatio = (i / Math.max(1, clipCount - 1)) * 0.9 + 0.04;
-        const clipStart = Math.floor(maxStart * startRatio);
+        // Distribute start offsets across the user's adjusted range ("video ko chota bada kar sake")
+        const effectiveRangeStart = config?.rangeStart ?? 0;
+        const effectiveRangeEnd = config?.rangeEnd ?? totalSec;
+        const effectiveRangeSpan = Math.max(clipDuration, effectiveRangeEnd - effectiveRangeStart);
+        const maxStartOffset = Math.max(0, effectiveRangeSpan - clipDuration);
+        const startRatio = (i / Math.max(1, clipCount - 1)) * 0.88 + 0.05;
+        const clipStart = Number((effectiveRangeStart + (maxStartOffset * startRatio)).toFixed(1));
         const clipEnd = Number((clipStart + clipDuration).toFixed(1));
 
         const backendClip = backendJobData?.clips?.[i];
@@ -241,11 +245,13 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
           ? backendClip.words
           : generateTranscriptForDuration(clipDuration, selectedLang, i, clipStart);
 
+        const rawDownload = backendClip?.downloadUrl || `http://localhost:3001/api/clips/clip-${newProjectId}-${i + 1}/download`;
+
         generatedClips.push({
           id: `clip-${newProjectId}-${i + 1}`,
           projectId: newProjectId,
           title: `${cleanTitle} — ${theme.title}`,
-          hookTitle: theme.hook,
+          hookTitle: config?.isHookTitleEnabled === false ? '' : theme.hook,
           duration: clipDuration,
           startTime: clipStart,
           endTime: clipEnd,
@@ -257,7 +263,7 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
           previewThumbnail: finalThumb,
           youtubeId: ytId || undefined,
           videoUrl: backendClip?.videoUrl || undefined,
-          downloadUrl: backendClip?.downloadUrl || `http://localhost:3001/api/clips/clip-${newProjectId}-${i + 1}/download`,
+          downloadUrl: resolveDownloadUrl(rawDownload),
           renderedFile: backendClip?.renderedFile || null,
           targetPlatform: ['tiktok', 'reels', 'shorts'],
           virality: {

@@ -544,7 +544,12 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
             </button>
 
             <button
-              onClick={handleExportHD}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleExportHD();
+              }}
               disabled={isExporting}
               data-testid="export-hd-btn"
               title={isMobile ? 'Save video directly to phone Gallery / Photos' : 'Export HD MP4 video'}
