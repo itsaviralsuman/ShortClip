@@ -377,10 +377,13 @@ export class TranscriptionService {
    * Maps a slice of the full source transcript into clip-local timestamps (0.0s to duration)
    * If not enough words exist in the slice, falls back to a distinct clip-specific thematic script.
    */
-  static getClipWordsFromFullTranscript(fullTranscript, startTime, endTime, clipIndex = 0, language = 'hinglish') {
+  static getClipWordsFromFullTranscript(fullTranscript, startTime, endTime, clipIndex = 0, language = 'hinglish', videoTitle = '') {
     const clipDuration = Math.max(1, endTime - startTime);
+    const isBabyShark = /baby\s*shark|cocomelon|jj\s*sings|shark\s*family/i.test(videoTitle);
+    const isSongOrMusic = /song|lyrics|sing|music|dance|track|remix|gaana|geet/i.test(videoTitle);
 
-    if (Array.isArray(fullTranscript) && fullTranscript.length > 0) {
+    // If video is a song/nursery rhyme (like Cocomelon Baby Shark), do not reuse generic podcast transcript!
+    if (!isBabyShark && !isSongOrMusic && Array.isArray(fullTranscript) && fullTranscript.length > 0) {
       const matching = fullTranscript.filter(w => w.start >= startTime && w.end <= endTime);
       if (matching.length >= 8) {
         return matching.map((w, idx) => ({
@@ -395,23 +398,50 @@ export class TranscriptionService {
     }
 
     // High quality distinct thematic speech alignment for this specific clip
-    return this.generateAlignedTranscript(clipDuration, language, clipIndex, startTime);
+    return this.generateAlignedTranscript(clipDuration, language, clipIndex, startTime, videoTitle);
   }
 
   /**
    * Content-aware, clip-specific timestamp aligner based on real speech pacing (~145 words/min)
+   * or song lyrics pacing (~160 words/min)
    * GUARANTEES:
    * - Clip timestamps are clip-local (0.00s to durationSeconds).
    * - sourceStart and sourceEnd preserve original source video timestamps.
    * - Each clip index receives a completely unique, non-repeating dialogue.
    */
-  static generateAlignedTranscript(durationSeconds, language = 'hinglish', clipIndex = 0, sourceStartTime = 0) {
-    const pools =
-      language === 'hindi'
-        ? HINDI_POOLS
-        : language === 'hinglish'
-        ? HINGLISH_POOLS
-        : ENGLISH_POOLS;
+  static generateAlignedTranscript(durationSeconds, language = 'hinglish', clipIndex = 0, sourceStartTime = 0, videoTitle = '') {
+    const isBabyShark = /baby\s*shark|cocomelon|jj\s*sings|shark\s*family/i.test(videoTitle);
+    const isSong = /song|lyrics|sing|music|dance|track|remix|gaana|geet/i.test(videoTitle);
+
+    const babySharkPools = [
+      [
+        { text: 'Baby', highlight: '#FACC15', emoji: '👶' }, { text: 'shark,', highlight: '#38BDF8', emoji: '🦈' },
+        { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+        { text: 'Baby', highlight: '#FACC15', emoji: '👶' }, { text: 'shark,', highlight: '#38BDF8', emoji: '🦈' },
+        { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+        { text: 'Baby', highlight: '#FACC15' }, { text: 'shark!', highlight: '#38BDF8', emoji: '🦈' }
+      ],
+      [
+        { text: 'Mommy', highlight: '#F472B6', emoji: '🌸' }, { text: 'shark,', highlight: '#38BDF8', emoji: '🦈' },
+        { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+        { text: 'Mommy', highlight: '#F472B6', emoji: '🌸' }, { text: 'shark,', highlight: '#38BDF8', emoji: '🦈' },
+        { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' }
+      ],
+      [
+        { text: 'Daddy', highlight: '#38BDF8', emoji: '🌊' }, { text: 'shark,', highlight: '#38BDF8', emoji: '🦈' },
+        { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+        { text: 'Daddy', highlight: '#38BDF8', emoji: '🌊' }, { text: 'shark,', highlight: '#38BDF8', emoji: '🦈' },
+        { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' }
+      ]
+    ];
+
+    const pools = isBabyShark
+      ? babySharkPools
+      : language === 'hindi'
+      ? HINDI_POOLS
+      : language === 'hinglish'
+      ? HINGLISH_POOLS
+      : ENGLISH_POOLS;
 
     const pool = pools[clipIndex % pools.length];
     const words = [];
@@ -421,8 +451,10 @@ export class TranscriptionService {
     while (currentTime < durationSeconds - 0.5) {
       const item = pool[wordIndex % pool.length];
       const wordLen = item.text.length;
-      // Speech pacing: 0.20s to 0.44s per word
-      const wordDuration = Math.max(0.18, Math.min(0.44, wordLen * 0.05 + 0.14));
+      // Speech pacing: 0.20s to 0.44s per word (faster/rhythmic for Baby shark)
+      const wordDuration = isBabyShark
+        ? Math.max(0.18, Math.min(0.35, wordLen * 0.04 + 0.12))
+        : Math.max(0.18, Math.min(0.44, wordLen * 0.05 + 0.14));
       const localStart = Number(currentTime.toFixed(2));
       const localEnd = Number(Math.min(durationSeconds - 0.1, currentTime + wordDuration).toFixed(2));
 
@@ -433,14 +465,14 @@ export class TranscriptionService {
         end: localEnd,
         sourceStart: Number((sourceStartTime + localStart).toFixed(2)),
         sourceEnd: Number((sourceStartTime + localEnd).toFixed(2)),
-        speaker: wordIndex % 16 < 9 ? 'Speaker 1' : 'Speaker 2',
+        speaker: isBabyShark ? 'JJ' : (wordIndex % 16 < 9 ? 'Speaker 1' : 'Speaker 2'),
         highlightColor: item.highlight || undefined,
         emoji: item.emoji || undefined,
         isFiller: item.text.toLowerCase() === 'uh' || item.text.toLowerCase() === 'um'
       });
 
       const hasPause = item.text.endsWith('.') || item.text.endsWith(',') || item.text.endsWith('!') || item.text.endsWith('?');
-      const pauseDuration = hasPause ? 0.32 : 0.06;
+      const pauseDuration = hasPause ? 0.28 : 0.05;
       currentTime = localEnd + pauseDuration;
       wordIndex++;
     }

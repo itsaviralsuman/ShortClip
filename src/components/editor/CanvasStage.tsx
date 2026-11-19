@@ -227,7 +227,17 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
             <div className="w-full h-full flex flex-col">
               {/* Top Speaker: Host (Using Real Media / YouTube Stream) */}
               <div className="relative flex-1 bg-black overflow-hidden border-b-2 border-brand-purple">
-                {youtubeId ? (
+                {videoUrl ? (
+                  <video
+                    ref={videoRef}
+                    src={videoUrl}
+                    poster={posterUrl}
+                    loop
+                    playsInline
+                    muted={isMuted}
+                    className="w-full h-full object-cover"
+                  />
+                ) : youtubeId ? (
                   (hasStarted || isPlaying) ? (
                     <iframe
                       ref={iframeRef}
@@ -263,16 +273,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
                       className="w-full h-full object-cover filter brightness-90"
                     />
                   )
-                ) : videoUrl ? (
-                  <video
-                    ref={videoRef}
-                    src={videoUrl}
-                    poster={posterUrl}
-                    loop
-                    playsInline
-                    muted={isMuted}
-                    className="w-full h-full object-cover"
-                  />
                 ) : (
                   <img
                     src={posterUrl}
@@ -338,7 +338,17 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
             </div>
           ) : (
             <div className="relative w-full h-full">
-              {youtubeId ? (
+              {videoUrl ? (
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  poster={posterUrl}
+                  loop
+                  playsInline
+                  muted={isMuted}
+                  className="w-full h-full object-cover"
+                />
+              ) : youtubeId ? (
                 (hasStarted || isPlaying) ? (
                   <iframe
                     ref={iframeRef}
@@ -374,16 +384,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({
                     className="w-full h-full object-cover filter brightness-90"
                   />
                 )
-              ) : videoUrl ? (
-                <video
-                  ref={videoRef}
-                  src={videoUrl}
-                  poster={posterUrl}
-                  loop
-                  playsInline
-                  muted={isMuted}
-                  className="w-full h-full object-cover"
-                />
               ) : (
                 <img
                   src={posterUrl}

@@ -37,69 +37,104 @@ export class CandidateService {
       targetClipCount = Math.max(2, Math.floor(totalDuration / 65));
     }
 
+    // Detect content type from title to deliver relevant titles, hooks and structures
+    const isBabyShark = /baby\s*shark|cocomelon|jj\s*sings|shark\s*family/i.test(videoTitle);
+    const isSongOrMusic = /song|lyrics|sing|music|dance|track|remix|gaana|geet/i.test(videoTitle);
+    const isGaming = /gaming|minecraft|gta|bgmi|pubg|clutch|roblox/i.test(videoTitle);
+
+    const babySharkThemes = [
+      { theme: 'baby_shark_chorus', hookEmoji: '🦈', nameSuffix: 'Baby Shark Core Chorus', hookTitle: 'BABY SHARK 🦈' },
+      { theme: 'mommy_shark_harmony', hookEmoji: '🌸', nameSuffix: 'Mommy Shark Splash', hookTitle: 'MOMMY SHARK 🌸' },
+      { theme: 'daddy_shark_rhythm', hookEmoji: '🌊', nameSuffix: 'Daddy Shark Wave Rhythm', hookTitle: 'DADDY SHARK 🌊' },
+      { theme: 'grandma_shark_dance', hookEmoji: '👵', nameSuffix: 'Grandma Shark Playful Dance', hookTitle: 'GRANDMA SHARK 👵' },
+      { theme: 'grandpa_shark_melody', hookEmoji: '👓', nameSuffix: 'Grandpa Shark Classic Melody', hookTitle: 'GRANDPA SHARK 👓' },
+      { theme: 'lets_go_hunt', hookEmoji: '🐠', nameSuffix: 'Let’s Go Hunt Sea Chase', hookTitle: 'LET’S GO HUNT 🐠' },
+      { theme: 'run_away_tempo', hookEmoji: '🏃', nameSuffix: 'Run Away Fast Tempo', hookTitle: 'RUN AWAY 🏃' },
+      { theme: 'safe_at_last_party', hookEmoji: '🎉', nameSuffix: 'Safe At Last Celebration', hookTitle: 'SAFE AT LAST 🎉' },
+      { theme: 'happy_ending_dance', hookEmoji: '🏆', nameSuffix: 'It’s The End Dance', hookTitle: 'IT’S THE END 🏆' },
+      { theme: 'sing_with_jj', hookEmoji: '👶', nameSuffix: 'Sing Along Again With JJ', hookTitle: 'SING WITH JJ 👶' }
+    ];
+
+    const songThemes = [
+      { theme: 'catchy_chorus', hookEmoji: '🎶', nameSuffix: 'Main Chorus & Peak Melody', hookTitle: 'CATCHY CHORUS 🎶' },
+      { theme: 'beat_drop', hookEmoji: '🔥', nameSuffix: 'High-Energy Beat Drop', hookTitle: 'FEEL THE BEAT 🔥' },
+      { theme: 'emotional_bridge', hookEmoji: '✨', nameSuffix: 'Emotional Bridge & Harmony', hookTitle: 'BEST PART ✨' },
+      { theme: 'dance_groove', hookEmoji: '💃', nameSuffix: 'Dance Break & Rhythm', hookTitle: 'DANCE BREAK 💃' }
+    ];
+
+    const gamingThemes = [
+      { theme: 'insane_clutch', hookEmoji: '🔥', nameSuffix: 'Insane 1v4 Round Clutch', hookTitle: 'INSANE CLUTCH 🔥' },
+      { theme: 'clean_headshots', hookEmoji: '🎯', nameSuffix: 'Flank & Clean Headshots', hookTitle: 'CLEAN HEADSHOT 🎯' },
+      { theme: 'clutch_survival', hookEmoji: '😱', nameSuffix: 'Unbelievable Survival Moment', hookTitle: 'HOW DID I LIVE?! 😱' }
+    ];
+
     // Curated thematic moments representing high-retention storytelling structures
-    const themes = [
+    const podcastThemes = [
       {
         theme: 'high_stakes_hook',
         hookEmoji: '😱',
         nameSuffix: 'Terrifying Opening Climax & The Hook',
+        hookTitle: 'TERRIFYING OPENING HOOK 😱',
         rationale: 'Provocative opening statement triggers dopamine retention spike within first 2.1 seconds. High contrast and immediate audience curiosity.'
       },
       {
         theme: 'revelation_breakdown',
         hookEmoji: '💡',
         nameSuffix: 'The Hidden Truth Revealed',
+        hookTitle: 'THE HIDDEN TRUTH REVEALED 💡',
         rationale: 'Deep explanatory breakdown. High informational density and metric shifts create strong replayability and comment debate.'
       },
       {
         theme: 'emotional_climax',
         hookEmoji: '🔥',
         nameSuffix: 'High-Stakes Decision & Turning Point',
+        hookTitle: 'HIGH-STAKES TURNING POINT 🔥',
         rationale: 'Emotional peak with clear narrative tension that polarizes audience perspective, boosting share rate across TikTok & Reels.'
       },
       {
         theme: 'actionable_framework',
         hookEmoji: '⚡',
         nameSuffix: 'The 100x Growth Execution Rule',
+        hookTitle: 'THE 100X GROWTH RULE ⚡',
         rationale: 'Clear step-by-step actionable framework. Viewers immediately save the video for reference, triggering algorithmic recommendation.'
       },
       {
         theme: 'unfiltered_opinion',
         hookEmoji: '💀',
         nameSuffix: 'Why 99% of People Fail & Quit Early',
+        hookTitle: 'WHY 99% FAIL & QUIT 💀',
         rationale: 'Controversial viewpoint challenging common wisdom. Drives viewer retention through strong disagreement and engagement.'
       },
       {
         theme: 'inspiring_takeaway',
         hookEmoji: '🚀',
         nameSuffix: 'The Real Mindset Shift Needed to Win',
+        hookTitle: 'MINDSET SHIFT TO WIN 🚀',
         rationale: 'Uplifting conclusion that delivers emotional catharsis and leaves audience feeling empowered, driving follow/profile clicks.'
       },
       {
         theme: 'deep_storytelling',
         hookEmoji: '📖',
-        nameSuffix: 'The Untold Behind-The-Scenes Incident',
-        rationale: 'Rich anecdotal storytelling with strong suspense arc. Average watch time exceeds 85% due to curiosity gap.'
+        nameSuffix: 'Deep Narrative Climax & Story Lesson',
+        hookTitle: 'DEEP STORY CLIMAX 📖',
+        rationale: 'Compelling narrative structure with hero’s journey progression.'
       },
       {
-        theme: 'surprising_twist',
-        hookEmoji: '🤯',
-        nameSuffix: 'The Shocking Twist Nobody Saw Coming',
-        rationale: 'Major perspective pivot that overturns initial assumptions, prompting instant rewatches to check hidden details.'
-      },
-      {
-        theme: 'masterclass_qa',
+        theme: 'top_solution',
         hookEmoji: '🎯',
-        nameSuffix: 'Crucial Question & Flawless Answer',
-        rationale: 'Crisp question-and-answer format where the resolution directly solves a painful, high-frequency creator problem.'
-      },
-      {
-        theme: 'core_summary',
-        hookEmoji: '🏆',
-        nameSuffix: 'The Golden Rule to Remember Forever',
-        rationale: 'Memorable soundbite summary perfectly packaged for short-form retention with zero fluff.'
+        nameSuffix: 'Top Question Answered Directly',
+        hookTitle: 'THE EXACT ANSWER 🎯',
+        rationale: 'Directly addresses the #1 audience pain point with clarity.'
       }
     ];
+
+    const themes = isBabyShark
+      ? babySharkThemes
+      : isSongOrMusic
+      ? songThemes
+      : isGaming
+      ? gamingThemes
+      : podcastThemes;
 
     // Generate non-overlapping candidate search windows spaced evenly across the source video:
     // Window start positions from 3% to 92% of the video

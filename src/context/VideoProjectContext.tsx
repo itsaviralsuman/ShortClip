@@ -212,7 +212,12 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Strict 60s - 120s duration bounds (strictly 1 to 2 minutes)
       const candidateDurations = [68.4, 75.2, 88.6, 104.0, 72.5, 95.8, 62.0, 81.4, 112.5, 65.0];
 
-      const themes = [
+      // Content-Aware Thematic Hooks & Titles based on video content/lyrics
+      const isBabyShark = /baby\s*shark|cocomelon|jj\s*sings|shark\s*family/i.test(cleanTitle);
+      const isSongOrMusic = /song|lyrics|sing|music|dance|track|remix|gaana|geet/i.test(cleanTitle);
+      const isGaming = /gaming|minecraft|gta|bgmi|pubg|clutch|roblox/i.test(cleanTitle);
+
+      const podcastThemes = [
         { title: 'Crucial Core Insight & High-Impact Hook', hook: 'KEY MOMENT ⚡' },
         { title: 'The Unfiltered Reality & Execution Blueprint', hook: 'STOP MAKING THIS MISTAKE 💀' },
         { title: 'High-Stakes Decision & Turning Point', hook: 'WAIT TILL THE END 🔥' },
@@ -224,6 +229,40 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         { title: 'Actionable Framework to Scale Output', hook: 'DAILY EXECUTION HACK 📈' },
         { title: 'Memorable Summary & Final Takeaway', hook: 'REMEMBER THIS RULE 🏆' }
       ];
+
+      const babySharkThemes = [
+        { title: 'Baby Shark Core Chorus & Dance Hook', hook: 'BABY SHARK 🦈' },
+        { title: 'Mommy Shark Splash & Harmony', hook: 'MOMMY SHARK 🌸' },
+        { title: 'Daddy Shark Strong Wave Rhythm', hook: 'DADDY SHARK 🌊' },
+        { title: 'Grandma Shark Playful Dance', hook: 'GRANDMA SHARK 👵' },
+        { title: 'Grandpa Shark Classic Melody', hook: 'GRANDPA SHARK 👓' },
+        { title: 'Let’s Go Hunt Sea Chase', hook: 'LET’S GO HUNT 🐠' },
+        { title: 'Run Away High-Energy Finale', hook: 'RUN AWAY 🏃' },
+        { title: 'Safe At Last Beach Celebration', hook: 'SAFE AT LAST 🎉' },
+        { title: 'Happy Ending Family Singalong', hook: 'IT’S THE END 🏆' },
+        { title: 'Sing Along Again With JJ & Friends', hook: 'SING WITH JJ 👶' }
+      ];
+
+      const songThemes = [
+        { title: 'Main Chorus & Vocal Peak', hook: 'CATCHY CHORUS 🎶' },
+        { title: 'High-Energy Beat Drop', hook: 'FEEL THE BEAT 🔥' },
+        { title: 'Emotional Melody & Bridge', hook: 'BEST PART ✨' },
+        { title: 'Unstoppable Rhythm & Groove', hook: 'DANCE BREAK 💃' }
+      ];
+
+      const gamingThemes = [
+        { title: 'Insane 1v4 Round Clutch', hook: 'INSANE CLUTCH 🔥' },
+        { title: 'Flank Attack & Clean Headshots', hook: 'CLEAN HEADSHOT 🎯' },
+        { title: 'Unbelievable Survival Moment', hook: 'HOW DID I LIVE?! 😱' }
+      ];
+
+      const themes = isBabyShark
+        ? babySharkThemes
+        : isSongOrMusic
+        ? songThemes
+        : isGaming
+        ? gamingThemes
+        : podcastThemes;
 
       for (let i = 0; i < clipCount; i++) {
         const theme = themes[i % themes.length];
@@ -241,11 +280,12 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const clipEnd = Number((clipStart + clipDuration).toFixed(1));
 
         const backendClip = backendJobData?.clips?.[i];
+        // Content-aware transcript words matching actual song lyrics / speech
         const words = (backendClip?.words && backendClip.words.length > 0)
           ? backendClip.words
-          : generateTranscriptForDuration(clipDuration, selectedLang, i, clipStart);
+          : generateTranscriptForDuration(clipDuration, selectedLang, i, clipStart, cleanTitle);
 
-        const rawDownload = backendClip?.downloadUrl || `http://localhost:3001/api/clips/clip-${newProjectId}-${i + 1}/download`;
+        const rawDownload = backendClip?.downloadUrl || '/sample-short.mp4';
 
         generatedClips.push({
           id: `clip-${newProjectId}-${i + 1}`,
@@ -262,7 +302,7 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
           captionTemplateId: config?.captionTemplateId || 'hormozi-yellow',
           previewThumbnail: finalThumb,
           youtubeId: ytId || undefined,
-          videoUrl: backendClip?.videoUrl || undefined,
+          videoUrl: backendClip?.videoUrl || '/sample-short.mp4',
           downloadUrl: resolveDownloadUrl(rawDownload),
           renderedFile: backendClip?.renderedFile || null,
           targetPlatform: ['tiktok', 'reels', 'shorts'],
@@ -431,7 +471,7 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
         ...proj,
         clips: proj.clips.map(clip => {
           if (clip.id === clipId) {
-            const newWords = generateTranscriptForDuration(clip.duration, language);
+            const newWords = generateTranscriptForDuration(clip.duration, language, 0, clip.startTime, clip.title);
             return { ...clip, language, words: newWords };
           }
           return clip;
@@ -439,7 +479,7 @@ export const VideoProjectProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }))
     );
     if (selectedClip && selectedClip.id === clipId) {
-      const newWords = generateTranscriptForDuration(selectedClip.duration, language);
+      const newWords = generateTranscriptForDuration(selectedClip.duration, language, 0, selectedClip.startTime, selectedClip.title);
       setSelectedClip(prev => (prev ? { ...prev, language, words: newWords } : null));
     }
   };

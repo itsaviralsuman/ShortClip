@@ -65,7 +65,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     bRollConfig: { enabled: true, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    videoUrl: '/sample-short.mp4',
     targetPlatform: ['TikTok', 'Instagram Reels', 'YouTube Shorts'],
     virality: {
       overallScore: 97,
@@ -102,7 +102,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     bRollConfig: { enabled: true, frequency: 'aggressive', source: 'motion_graphics', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
+    videoUrl: '/sample-short.mp4',
     targetPlatform: ['YouTube Shorts', 'TikTok'],
     virality: {
       overallScore: 94,
@@ -139,7 +139,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     bRollConfig: { enabled: false, frequency: 'conservative', source: 'cinematic', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    videoUrl: '/sample-short.mp4',
     targetPlatform: ['Instagram Reels', 'TikTok'],
     virality: {
       overallScore: 91,
@@ -176,7 +176,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     bRollConfig: { enabled: false, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+    videoUrl: '/sample-short.mp4',
     targetPlatform: ['YouTube Shorts', 'LinkedIn'],
     virality: {
       overallScore: 89,
@@ -213,7 +213,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     bRollConfig: { enabled: true, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    videoUrl: '/sample-short.mp4',
     targetPlatform: ['TikTok', 'Instagram Reels'],
     virality: {
       overallScore: 93,
@@ -250,7 +250,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     bRollConfig: { enabled: true, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
+    videoUrl: '/sample-short.mp4',
     targetPlatform: ['YouTube Shorts', 'TikTok'],
     virality: {
       overallScore: 90,
@@ -287,7 +287,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     bRollConfig: { enabled: false, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    videoUrl: '/sample-short.mp4',
     targetPlatform: ['TikTok', 'Instagram Reels'],
     virality: {
       overallScore: 88,
@@ -324,7 +324,7 @@ export const SAMPLE_CLIPS: ViralClip[] = [
     bRollConfig: { enabled: true, frequency: 'balanced', source: 'ai_stock', kenBurnsTransition: true },
     previewThumbnail: 'https://i.ytimg.com/vi/iq9CN_xwmZo/hqdefault.jpg',
     youtubeId: 'iq9CN_xwmZo',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+    videoUrl: '/sample-short.mp4',
     targetPlatform: ['LinkedIn', 'YouTube Shorts', 'Instagram Reels'],
     virality: {
       overallScore: 95,

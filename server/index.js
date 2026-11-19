@@ -237,13 +237,14 @@ app.post('/api/process', async (req, res) => {
         const outputMp4Name = `${clipId}.mp4`;
         const outputMp4Path = path.join(outputsDir, outputMp4Name);
 
-        // Derive clip-specific words with clip-local timestamps starting at 0.0s
+        // Derive clip-specific words with clip-local timestamps starting at 0.0s (Content-Aware)
         const words = TranscriptionService.getClipWordsFromFullTranscript(
           fullTranscript,
           cand.startTime,
           cand.endTime,
           i,
-          language
+          language,
+          title
         );
 
         // Generate unique Opus-style .ass karaoke subtitles file for THIS clip

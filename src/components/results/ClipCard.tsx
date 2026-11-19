@@ -52,60 +52,45 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
   // Dynamic template details from the 35 OpusClip styles
   const tpl = getTemplateById(clip.captionTemplateId);
 
+  // Guaranteed valid MP4 stream URL for zero-latency, hardware-synchronized playback
+  const effectiveVideoUrl = clip.videoUrl || (clip.renderedFile ? `/outputs/${clip.renderedFile}` : '/sample-short.mp4');
+
   // Time tracking for dynamic caption synchronization & cut looping
   useEffect(() => {
     let interval: any;
-    if (isPlaying) {
+    if (isPlaying && !videoRef.current) {
       interval = setInterval(() => {
-        if (videoRef.current) {
-          if (videoRef.current.currentTime >= clip.duration || videoRef.current.ended) {
-            videoRef.current.currentTime = 0;
-            videoRef.current.play().catch(() => {});
-            setCurrentTime(0);
-          } else {
-            setCurrentTime(videoRef.current.currentTime);
-          }
-        } else {
-          setCurrentTime((t) => {
-            if (t >= clip.duration) {
-              if (iframeRef.current?.contentWindow) {
-                iframeRef.current.contentWindow.postMessage(
-                  JSON.stringify({ event: 'command', func: 'seekTo', args: [Math.floor(clip.startTime), true] }),
-                  '*'
-                );
-                iframeRef.current.contentWindow.postMessage(
-                  JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                  '*'
-                );
-              }
-              return 0;
-            }
-            return Number((t + 0.1).toFixed(1));
-          });
-        }
+        setCurrentTime((t) => {
+          if (t >= clip.duration) return 0;
+          return Number((t + 0.1).toFixed(1));
+        });
       }, 100);
-    } else {
-      setCurrentTime(0);
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0;
-      }
     }
     return () => clearInterval(interval);
-  }, [isPlaying, clip.duration, clip.startTime]);
+  }, [isPlaying, clip.duration]);
 
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
+        setIsPlaying(false);
       } else {
         if (videoRef.current.currentTime >= clip.duration || videoRef.current.ended) {
           videoRef.current.currentTime = 0;
         }
         videoRef.current.muted = isMuted;
-        videoRef.current.play().catch(() => {});
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => setIsPlaying(true))
+            .catch(() => setIsPlaying(true));
+        } else {
+          setIsPlaying(true);
+        }
       }
+    } else {
+      setIsPlaying(!isPlaying);
     }
-    setIsPlaying(!isPlaying);
   };
 
   const toggleMute = (e: React.MouseEvent) => {
@@ -185,16 +170,28 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
           style={{ transform: shouldZoomPunch ? `scale(${clip.autoZoom.zoomScale})` : 'scale(1)' }}
           className="w-full h-full transition-transform duration-300 ease-out origin-center"
         >
-          {clip.videoUrl ? (
+          {effectiveVideoUrl ? (
             <video
               ref={videoRef}
-              src={clip.videoUrl}
+              src={effectiveVideoUrl}
               poster={clip.previewThumbnail}
               muted={isMuted}
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               className="w-full h-full object-cover"
+              onTimeUpdate={(e) => {
+                const v = e.currentTarget;
+                if (v.currentTime >= clip.duration) {
+                  v.currentTime = 0;
+                  v.play().catch(() => {});
+                  setCurrentTime(0);
+                } else {
+                  setCurrentTime(v.currentTime);
+                }
+              }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
               onEnded={() => {
                 if (videoRef.current) {
                   videoRef.current.currentTime = 0;
@@ -202,36 +199,6 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onOpenStudio, isSelect
                 }
               }}
             />
-          ) : clip.youtubeId ? (
-            isPlaying ? (
-              <iframe
-                ref={iframeRef}
-                src={`https://www.youtube.com/embed/${clip.youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&start=${Math.floor(clip.startTime)}&end=${Math.floor(clip.endTime)}&enablejsapi=1&controls=0&loop=1&playlist=${clip.youtubeId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
-                title={clip.title}
-                className="w-full h-full object-cover pointer-events-none scale-125"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                onLoad={() => {
-                  if (iframeRef.current?.contentWindow) {
-                    iframeRef.current.contentWindow.postMessage(
-                      JSON.stringify({ event: 'command', func: isMuted ? 'mute' : 'unMute', args: [] }),
-                      '*'
-                    );
-                    if (!isMuted) {
-                      iframeRef.current.contentWindow.postMessage(
-                        JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
-                        '*'
-                      );
-                    }
-                  }
-                }}
-              />
-            ) : (
-              <img
-                src={clip.previewThumbnail}
-                alt={clip.title}
-                className="w-full h-full object-cover filter brightness-85"
-              />
-            )
           ) : (
             <img
               src={clip.previewThumbnail}

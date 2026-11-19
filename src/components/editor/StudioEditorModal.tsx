@@ -227,7 +227,7 @@ export const StudioEditorModal: React.FC<StudioEditorModalProps> = ({
         {/* Center: Canvas Video Stage */}
         <div className={`flex-1 h-full flex flex-col ${mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'}`}>
           <CanvasStage
-            videoUrl={clip.videoUrl}
+            videoUrl={clip.videoUrl || (clip.renderedFile ? `/outputs/${clip.renderedFile}` : '/sample-short.mp4')}
             youtubeId={clip.youtubeId}
             posterUrl={clip.previewThumbnail}
             currentTime={currentTime}

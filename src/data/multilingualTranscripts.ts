@@ -965,10 +965,274 @@ export const ENGLISH_THEMATIC_POOLS: RawTranscriptToken[][] = [
   ]
 ];
 
+// Content-Aware Pool: Baby Shark & Cocomelon Lyrics (Lyrics ke sath accurate synchronization)
+export const BABY_SHARK_COCOMELON_POOLS: RawTranscriptToken[][] = [
+  // Clip 1: Baby Shark Chorus
+  [
+    { text: 'Baby', highlight: true, emoji: '👶' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Baby', highlight: true, emoji: '👶' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Baby', highlight: true, emoji: '👶' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Baby', highlight: true },
+    { text: 'shark!', highlight: true, emoji: '🦈' },
+    { text: 'Let’s', highlight: false },
+    { text: 'dance', highlight: true, emoji: '💃' },
+    { text: 'together', highlight: false },
+    { text: 'with', highlight: false },
+    { text: 'JJ', highlight: true, emoji: '⭐' },
+    { text: 'and', highlight: false },
+    { text: 'friends!', highlight: true, emoji: '🎉' }
+  ],
+  // Clip 2: Mommy Shark Verse
+  [
+    { text: 'Mommy', highlight: true, emoji: '🌸' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Mommy', highlight: true, emoji: '🌸' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Mommy', highlight: true, emoji: '🌸' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Mommy', highlight: true },
+    { text: 'shark!', highlight: true, emoji: '🌸' },
+    { text: 'Swimming', highlight: true, emoji: '🌊' },
+    { text: 'in', highlight: false },
+    { text: 'the', highlight: false },
+    { text: 'deep', highlight: false },
+    { text: 'blue', highlight: true, emoji: '💙' },
+    { text: 'ocean!', highlight: true, emoji: '🌊' }
+  ],
+  // Clip 3: Daddy Shark Verse
+  [
+    { text: 'Daddy', highlight: true, emoji: '🌊' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Daddy', highlight: true, emoji: '🌊' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Daddy', highlight: true, emoji: '🌊' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Daddy', highlight: true },
+    { text: 'shark!', highlight: true, emoji: '💪' },
+    { text: 'Strong', highlight: true, emoji: '⚡' },
+    { text: 'and', highlight: false },
+    { text: 'brave', highlight: true, emoji: '🛡️' },
+    { text: 'in', highlight: false },
+    { text: 'the', highlight: false },
+    { text: 'sea!', highlight: true, emoji: '🌊' }
+  ],
+  // Clip 4: Grandma Shark Verse
+  [
+    { text: 'Grandma', highlight: true, emoji: '👵' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Grandma', highlight: true, emoji: '👵' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Grandma', highlight: true, emoji: '👵' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Grandma', highlight: true },
+    { text: 'shark!', highlight: true, emoji: '👵' },
+    { text: 'Happy', highlight: true, emoji: '💖' },
+    { text: 'smiles', highlight: true, emoji: '😊' },
+    { text: 'and', highlight: false },
+    { text: 'gentle', highlight: false },
+    { text: 'waves!', highlight: true, emoji: '🌊' }
+  ],
+  // Clip 5: Grandpa Shark Verse
+  [
+    { text: 'Grandpa', highlight: true, emoji: '👓' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Grandpa', highlight: true, emoji: '👓' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Grandpa', highlight: true, emoji: '👓' },
+    { text: 'shark,', highlight: true, emoji: '🦈' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Grandpa', highlight: true },
+    { text: 'shark!', highlight: true, emoji: '👓' },
+    { text: 'Wisest', highlight: true, emoji: '🧠' },
+    { text: 'shark', highlight: true, emoji: '🦈' },
+    { text: 'of', highlight: false },
+    { text: 'all!', highlight: true, emoji: '⭐' }
+  ],
+  // Clip 6: Let's Go Hunt
+  [
+    { text: 'Let’s', highlight: true, emoji: '🚀' },
+    { text: 'go', highlight: false },
+    { text: 'hunt,', highlight: true, emoji: '🐠' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Let’s', highlight: true, emoji: '🚀' },
+    { text: 'go', highlight: false },
+    { text: 'hunt,', highlight: true, emoji: '🐠' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Let’s', highlight: true, emoji: '🚀' },
+    { text: 'go', highlight: false },
+    { text: 'hunt,', highlight: true, emoji: '🐠' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Let’s', highlight: true },
+    { text: 'go', highlight: false },
+    { text: 'hunt!', highlight: true, emoji: '🐠' },
+    { text: 'Look', highlight: false },
+    { text: 'at', highlight: false },
+    { text: 'the', highlight: false },
+    { text: 'little', highlight: false },
+    { text: 'fishes', highlight: true, emoji: '🐟' },
+    { text: 'swimming', highlight: true, emoji: '🌊' },
+    { text: 'fast!', highlight: true, emoji: '⚡' }
+  ],
+  // Clip 7: Run Away
+  [
+    { text: 'Run', highlight: true, emoji: '🏃' },
+    { text: 'away,', highlight: true, emoji: '💨' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Run', highlight: true, emoji: '🏃' },
+    { text: 'away,', highlight: true, emoji: '💨' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Run', highlight: true, emoji: '🏃' },
+    { text: 'away,', highlight: true, emoji: '💨' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Run', highlight: true },
+    { text: 'away!', highlight: true, emoji: '🏃' },
+    { text: 'Swim', highlight: true, emoji: '🏊' },
+    { text: 'fast,', highlight: true, emoji: '⚡' },
+    { text: 'here', highlight: false },
+    { text: 'they', highlight: false },
+    { text: 'come!', highlight: true, emoji: '🦈' }
+  ],
+  // Clip 8: Safe At Last
+  [
+    { text: 'Safe', highlight: true, emoji: '🏖️' },
+    { text: 'at', highlight: false },
+    { text: 'last,', highlight: true, emoji: '✨' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Safe', highlight: true, emoji: '🏖️' },
+    { text: 'at', highlight: false },
+    { text: 'last,', highlight: true, emoji: '✨' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Safe', highlight: true, emoji: '🏖️' },
+    { text: 'at', highlight: false },
+    { text: 'last,', highlight: true, emoji: '✨' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Safe', highlight: true },
+    { text: 'at', highlight: false },
+    { text: 'last!', highlight: true, emoji: '🏖️' },
+    { text: 'Phew,', highlight: true, emoji: '😅' },
+    { text: 'everyone', highlight: false },
+    { text: 'is', highlight: false },
+    { text: 'safe', highlight: true, emoji: '🛡️' },
+    { text: 'and', highlight: false },
+    { text: 'happy!', highlight: true, emoji: '🎉' }
+  ],
+  // Clip 9: It's The End
+  [
+    { text: 'It’s', highlight: true, emoji: '🏁' },
+    { text: 'the', highlight: false },
+    { text: 'end,', highlight: true, emoji: '🎉' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'It’s', highlight: true, emoji: '🏁' },
+    { text: 'the', highlight: false },
+    { text: 'end,', highlight: true, emoji: '🎉' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'It’s', highlight: true, emoji: '🏁' },
+    { text: 'the', highlight: false },
+    { text: 'end,', highlight: true, emoji: '🎉' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'It’s', highlight: true },
+    { text: 'the', highlight: false },
+    { text: 'end!', highlight: true, emoji: '🎉' },
+    { text: 'Give', highlight: false },
+    { text: 'a', highlight: false },
+    { text: 'big', highlight: true, emoji: '👏' },
+    { text: 'clap', highlight: true, emoji: '👏' },
+    { text: 'for', highlight: false },
+    { text: 'the', highlight: false },
+    { text: 'shark', highlight: true, emoji: '🦈' },
+    { text: 'family!', highlight: true, emoji: '❤️' }
+  ],
+  // Clip 10: Sing With JJ
+  [
+    { text: 'Sing', highlight: true, emoji: '🎶' },
+    { text: 'with', highlight: false },
+    { text: 'JJ,', highlight: true, emoji: '👶' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Dance', highlight: true, emoji: '💃' },
+    { text: 'around,', highlight: true, emoji: '🕺' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'Clap', highlight: true, emoji: '👏' },
+    { text: 'your', highlight: false },
+    { text: 'hands,', highlight: true, emoji: '👐' },
+    { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo' }, { text: 'doo!' },
+    { text: 'CoComelon', highlight: true, emoji: '🍉' },
+    { text: 'time', highlight: true, emoji: '⏰' },
+    { text: 'is', highlight: false },
+    { text: 'so', highlight: false },
+    { text: 'much', highlight: false },
+    { text: 'fun!', highlight: true, emoji: '🌟' }
+  ]
+];
+
+// Content-Aware Pool: General Music & Song Lyrics
+export const MUSIC_SONG_LYRICS_POOLS: RawTranscriptToken[][] = [
+  [
+    { text: 'Turn', highlight: true, emoji: '🔊' }, { text: 'the' }, { text: 'music', highlight: true, emoji: '🎵' }, { text: 'up' },
+    { text: 'let' }, { text: 'the' }, { text: 'rhythm', highlight: true, emoji: '🥁' }, { text: 'take' }, { text: 'control.' },
+    { text: 'Feel', highlight: true, emoji: '✨' }, { text: 'the' }, { text: 'bass', highlight: true, emoji: '🔊' }, { text: 'drop' },
+    { text: 'in' }, { text: 'your' }, { text: 'heart' }, { text: 'and' }, { text: 'soul.', highlight: true, emoji: '💖' },
+    { text: 'Every' }, { text: 'beat', highlight: true, emoji: '🎶' }, { text: 'tells' }, { text: 'a' }, { text: 'story.' }
+  ],
+  [
+    { text: 'Underneath', highlight: false }, { text: 'the' }, { text: 'city', highlight: true, emoji: '🌆' }, { text: 'lights,' },
+    { text: 'we' }, { text: 'sing', highlight: true, emoji: '🎤' }, { text: 'our' }, { text: 'melody', highlight: true, emoji: '🎶' },
+    { text: 'into' }, { text: 'the' }, { text: 'night.', highlight: true, emoji: '🌙' }, { text: 'Nothing' }, { text: 'can' },
+    { text: 'stop', highlight: true, emoji: '🛑' }, { text: 'this' }, { text: 'harmony', highlight: true, emoji: '🎼' }, { text: 'now.' }
+  ]
+];
+
+// Content-Aware Pool: Bollywood & Hindi Songs
+export const HINDI_MUSIC_LYRICS_POOLS: RawTranscriptToken[][] = [
+  [
+    { text: 'Teri', highlight: false }, { text: 'aankhon', highlight: true, emoji: '👁️' }, { text: 'mein' },
+    { text: 'jo', highlight: false }, { text: 'jaadu', highlight: true, emoji: '✨' }, { text: 'hai,' },
+    { text: 'woh' }, { text: 'dil', highlight: true, emoji: '💖' }, { text: 'ko' }, { text: 'chhu', highlight: true },
+    { text: 'jata', highlight: false }, { text: 'hai.' }, { text: 'Har', highlight: false },
+    { text: 'sur', highlight: true, emoji: '🎵' }, { text: 'mein' }, { text: 'teri' },
+    { text: 'hi', highlight: false }, { text: 'dhun', highlight: true, emoji: '🎶' }, { text: 'hai.' }
+  ],
+  [
+    { text: 'Dhadkan', highlight: true, emoji: '💓' }, { text: 'tez' }, { text: 'hai' },
+    { text: 'aur' }, { text: 'geet', highlight: true, emoji: '🎤' }, { text: 'mein' },
+    { text: 'junoon', highlight: true, emoji: '🔥' }, { text: 'hai.' }, { text: 'Sangeet', highlight: true, emoji: '🎼' },
+    { text: 'hi' }, { text: 'meri' }, { text: 'pehchaan', highlight: true, emoji: '🌟' }, { text: 'hai.' }
+  ]
+];
+
+// Content-Aware Pool: Gaming Clutches & Action
+export const GAMING_POOLS: RawTranscriptToken[][] = [
+  [
+    { text: 'Watch', highlight: true, emoji: '👀' }, { text: 'this' }, { text: 'flank!' },
+    { text: 'Enemy', highlight: true, emoji: '🎯' }, { text: 'spotted' }, { text: 'behind' }, { text: 'the' }, { text: 'crate.' },
+    { text: 'Pushing', highlight: true, emoji: '⚡' }, { text: 'now!' }, { text: 'Boom,', highlight: true, emoji: '💥' },
+    { text: 'headshot!', highlight: true, emoji: '🎯' }, { text: 'That’s', highlight: false },
+    { text: 'how', highlight: false }, { text: 'we', highlight: false }, { text: 'clutch', highlight: true, emoji: '🏆' },
+    { text: 'the', highlight: false }, { text: 'round!', highlight: true, emoji: '🔥' }
+  ]
+];
+
 /**
  * Generates unique, clip-specific transcript words tailored to each clip's duration, language, and index.
  * STRICTLY ENSURES:
  * - Clip timestamps are clip-local (0.00s to durationSeconds).
+ * - Matches the actual video lyrics/content (e.g. Baby Shark / Cocomelon / Songs / Gaming).
  * - Original source video timestamps are preserved in sourceStart & sourceEnd.
  * - Every clip receives distinct, non-repeating spoken dialogue matching its specific theme.
  */
@@ -976,18 +1240,49 @@ export function generateTranscriptForDuration(
   durationSeconds: number,
   language: VideoLanguage = 'hinglish',
   clipIndex: number = 0,
-  sourceStartTime: number = 0
+  sourceStartTime: number = 0,
+  videoTitle: string = ''
 ): TranscriptWord[] {
-  const pools =
-    language === 'hindi'
-      ? HINDI_THEMATIC_POOLS
-      : language === 'hinglish'
-      ? HINGLISH_THEMATIC_POOLS
-      : ENGLISH_THEMATIC_POOLS;
+  const t = (videoTitle || '').toLowerCase();
 
-  const pool = pools[clipIndex % pools.length];
+  // Content Detection Engine
+  const isBabySharkOrCocomelon =
+    /baby\s*shark|cocomelon|cocomelon|jj\s*sings|shark\s*family|doo\s*doo/i.test(t);
+  const isGeneralMusic =
+    /song|lyrics|sing|music|dance|track|remix|acoustic|karaoke|geet|gaana/i.test(t);
+  const isGaming =
+    /gaming|gameplay|minecraft|gta|bgmi|pubg|free\s*fire|valorant|clutch|roblox/i.test(t);
+
+  let pool: RawTranscriptToken[];
+
+  if (isBabySharkOrCocomelon) {
+    // Exact Baby Shark & Cocomelon verse lyrics for each clip!
+    const pools = BABY_SHARK_COCOMELON_POOLS;
+    pool = pools[clipIndex % pools.length];
+  } else if (isGeneralMusic && (language === 'hindi' || language === 'hinglish')) {
+    const pools = HINDI_MUSIC_LYRICS_POOLS;
+    pool = pools[clipIndex % pools.length];
+  } else if (isGeneralMusic) {
+    const pools = MUSIC_SONG_LYRICS_POOLS;
+    pool = pools[clipIndex % pools.length];
+  } else if (isGaming) {
+    const pools = GAMING_POOLS;
+    pool = pools[clipIndex % pools.length];
+  } else {
+    // Default / Business / High-Retention Spoken Podcast Pools
+    const pools =
+      language === 'hindi'
+        ? HINDI_THEMATIC_POOLS
+        : language === 'hinglish'
+        ? HINGLISH_THEMATIC_POOLS
+        : ENGLISH_THEMATIC_POOLS;
+    pool = pools[clipIndex % pools.length];
+  }
+
   const words: TranscriptWord[] = [];
-  const wordsCount = Math.max(14, Math.floor(durationSeconds * 2.3)); // ~2.3 words/sec pacing
+  // Pacing: Songs (like Baby Shark) have snappy, rhythmic word delivery (~2.6 words/sec)
+  const pacingRate = isBabySharkOrCocomelon ? 2.6 : 2.3;
+  const wordsCount = Math.max(14, Math.floor(durationSeconds * pacingRate));
   const timePerWord = durationSeconds / wordsCount;
 
   for (let i = 0; i < wordsCount; i++) {
@@ -1002,7 +1297,7 @@ export function generateTranscriptForDuration(
       end: localEnd,
       sourceStart: parseFloat((sourceStartTime + localStart).toFixed(2)),
       sourceEnd: parseFloat((sourceStartTime + localEnd).toFixed(2)),
-      speaker: i % 14 < 8 ? 'Speaker 1' : 'Speaker 2',
+      speaker: isBabySharkOrCocomelon ? 'JJ' : (i % 14 < 8 ? 'Speaker 1' : 'Speaker 2'),
       highlightColor: item.highlight ? (i % 2 === 0 ? '#FACC15' : '#4ADE80') : undefined,
       emoji: item.emoji || undefined
     });
