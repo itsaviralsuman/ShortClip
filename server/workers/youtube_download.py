@@ -73,8 +73,9 @@ def download_youtube(url, output_dir, job_id='dl'):
     # We ask for best video + best audio and merge directly to mp4
     dl_cmd = [
         sys.executable, '-m', 'yt_dlp',
-        '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best[ext=mp4]/best',
+        '-f', 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best',
         '--merge-output-format', 'mp4',
+        '--concurrent-fragments', '6',
         '--no-playlist',
         '--quiet',
         '-o', video_out_template,
